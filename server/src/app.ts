@@ -12,12 +12,4 @@ app.get('/', (req: Request, res: Response) => {
   res.send('SERVER RUNNING!');
 });
 
-
-
-
-
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
 console.log(process.cwd());
