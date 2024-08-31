@@ -1,44 +1,78 @@
+import mongoose from 'mongoose';
 import { Schema, model } from 'mongoose';
-import { IAddress, IUser } from './users.interface';
+import { IAddress, ICommunicationPreferences, ILoginDetails, IUser, IUserProfile, IVendorProfile } from './users.interface';
 
-// Define the Address sub-schema
+// Address Schema
 export const AddressSchema = new Schema<IAddress>({
-  street: { type: String },
-  city: { type: String },
-  state: { type: String },
-  postalCode: { type: String },
-  country: { type: String },
+  street: { type: String, trim: true },
+  city: { type: String, trim: true },
+  state: { type: String, trim: true },
+  postalCode: { type: String, trim: true },
+  country: { type: String, trim: true },
 });
 
-export const LastLoginSchema = new Schema({
+// LastLogin Schema
+export const LastLoginSchema = new Schema<ILoginDetails>({
   timestamp: { type: Date },
   ip: { type: String },
 });
 
-export const ProfileSchema = new Schema({
-  name: { type: String, required: true },
-  address: { type: String, required: true },
-  phoneNumber: { type: String, required: true },
-  avatarUrl: { type: String },
+// User Profile Schema
+export const UserProfileSchema = new Schema<IUserProfile>({
+  name: { type: String, required: true, trim: true },
+  phoneNumber: { type: String, required: true, trim: true },
+  avatarUrl: { type: String, trim: true },
   shippingAddress: AddressSchema,
   billingAddress: AddressSchema,
   dateOfBirth: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other'] },
 });
 
-export const CommunicationPreferencesSchema = new Schema({
+// Vendor Profile Schema
+export const VendorProfileSchema = new Schema<IVendorProfile>({
+  businessName: { type: String, required: true, trim: true },
+  businessAddress: { type: String, required: true, trim: true },
+  phoneNumber: { type: String, required: true, trim: true },
+  avatarUrl: { type: String, trim: true },
+  description: { type: String, trim: true },
+  ratings: {
+    averageRating: { type: Number, default: 0 },
+    reviewCount: { type: Number, default: 0 },
+  },
+  businessCategory: { type: String, trim: true },
+  websiteUrl: { type: String, trim: true },
+  socialMediaLinks: {
+    facebook: { type: String, trim: true },
+    twitter: { type: String, trim: true },
+    instagram: { type: String, trim: true },
+  },
+  taxId: { type: String, trim: true },
+  contactInfo: {
+    contactEmail: { type: String, trim: true },
+    contactPhone: { type: String, trim: true },
+    contactAddress: { type: String, trim: true },
+  },
+});
+
+// Communication Preferences Schema
+export const CommunicationPreferencesSchema = new Schema<ICommunicationPreferences>({
   email: { type: Boolean, default: true },
   sms: { type: Boolean, default: true },
   pushNotifications: { type: Boolean, default: true },
 });
 
-// User schema
+// Define Models
+const UserProfileModel = model<IUserProfile>('UserProfile', UserProfileSchema);
+const VendorProfileModel = model<IVendorProfile>('VendorProfile', VendorProfileSchema);
+
+// User Schema
 const UserSchema = new Schema<IUser>(
   {
     email: {
       type: String,
       required: [true, 'Email is required'],
       unique: true,
+      trim: true,
     },
     passwordHash: {
       type: String,
@@ -59,11 +93,26 @@ const UserSchema = new Schema<IUser>(
       default: true,
     },
     lastLogin: LastLoginSchema,
-    profile: ProfileSchema,
+    profile: {
+      type: Schema.Types.Mixed,
+      required: true,
+      validate: {
+        validator: function (v: any) {
+          if (this.role === 'vendor') {
+            // Create an instance of VendorProfileModel and validate
+            const vendorProfile = new VendorProfileModel(v);
+            return vendorProfile.validate().then(() => true).catch(() => false);
+          }
+          // Create an instance of UserProfileModel and validate
+          const userProfile = new UserProfileModel(v);
+          return userProfile.validate().then(() => true).catch(() => false);
+        },
+        message: 'Profile data is invalid for the given role',
+      },
+    },
     communicationPreferences: CommunicationPreferencesSchema,
   },
   { timestamps: true },
 );
 
-// User Model
 export const UserModel = model<IUser>('User', UserSchema);

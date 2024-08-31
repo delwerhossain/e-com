@@ -1,32 +1,4 @@
-export interface IUser {
-  email: String;
-  passwordHash: String;
-  role: 'user' | 'vendor';
-  isDelete: Boolean;
-  isActive: Boolean;
-  lastLogin?: TLoginDetails; // To track the last login time
-  createdAt?: Date; // To track when the user was created
-  updatedAt?: Date; // To track when the user profile was last updated
-  profile: IProfile;
-  communicationPreferences?: ICommunicationPreferences; // To manage how users prefer to be contacted
-}
-
-export interface ICommunicationPreferences {
-  email: Boolean;
-  sms: Boolean;
-  pushNotifications: Boolean;
-}
-
-export interface IProfile {
-  name: String;
-  address: String;
-  phoneNumber: string;
-  avatarUrl?: string; // URL for the user's profile picture
-  shippingAddress?: IAddress;
-  billingAddress?: IAddress;
-  dateOfBirth?: Date; // For personalized experiences or promotions
-  gender?: 'male' | 'female' | 'other'; // For user demographics analysis
-}
+// Address Interface
 export interface IAddress {
   street?: string;
   city?: string;
@@ -35,7 +7,64 @@ export interface IAddress {
   country?: string;
 }
 
-export interface TLoginDetails {
-  timestamp: Date;
-  ip: string;
+// Login Details Interface
+export interface ILoginDetails {
+  timestamp?: Date;
+  ip?: string;
+}
+
+// Communication Preferences Interface
+export interface ICommunicationPreferences {
+  email: boolean;
+  sms: boolean;
+  pushNotifications: boolean;
+}
+
+// User Profile Interface
+export interface IUserProfile {
+  name: string;
+  phoneNumber: string;
+  avatarUrl?: string;
+  shippingAddress?: IAddress;
+  billingAddress?: IAddress;
+  dateOfBirth?: Date;
+  gender?: 'male' | 'female' | 'other';
+}
+
+// Vendor Profile Interface
+export interface IVendorProfile {
+  businessName: string;
+  businessAddress: string;
+  phoneNumber: string;
+  avatarUrl?: string;
+  description?: string;
+  ratings?: {
+    averageRating: number;
+    reviewCount: number;
+  };
+  businessCategory?: string;
+  websiteUrl?: string;
+  socialMediaLinks?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  };
+  taxId?: string;
+  contactInfo?: {
+    contactEmail?: string;
+    contactPhone?: string;
+    contactAddress?: string;
+  };
+}
+
+// User Interface
+export interface IUser {
+  email: string;
+  passwordHash: string;
+  role: 'user' | 'vendor';
+  isDelete: boolean;
+  isActive: boolean;
+  lastLogin?: ILoginDetails;
+  profile: IUserProfile | IVendorProfile; // Conditional profile based on role
+  communicationPreferences?: ICommunicationPreferences;
 }
