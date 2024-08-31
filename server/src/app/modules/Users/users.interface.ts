@@ -1,7 +1,7 @@
 export interface IUser {
   email: String;
   passwordHash: String;
-  role: 'superAdmin' | 'admin' | 'user' | 'vendor';
+  role: 'user' | 'vendor';
   isDelete: Boolean;
   isActive: Boolean;
   lastLogin?: TLoginDetails; // To track the last login time
