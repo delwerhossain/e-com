@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
-import { categoryRoutes } from './app/modules/Categories/categories.routes';
 import router from './routes';
+import notFound from './middlewares/notFound';
 
 export const app: Application = express();
 app.use(express.json());
@@ -11,12 +11,5 @@ app.get('/', (req: Request, res: Response) => {
   res.send('SERVER RUNNING!');
 });
 
-
-
-
-
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
-
-console.log(process.cwd());
+//Not Found
+app.use(notFound);
