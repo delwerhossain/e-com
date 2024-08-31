@@ -1,33 +1,64 @@
 import { z } from 'zod';
 
-// Define the Login schema
-export const LoginSchema = z.object({
+// Define the Zod validation schema for the Login sub-document
+const LoginSchema = z.object({
   timestamp: z.date().optional(),
-  ip: z.string().optional(),
+  ip: z.string().trim().optional(),
 });
 
-// Define the Admin Profile schema
-export const AdminProfileSchema = z.object({
-  name: z.string().nonempty("Name is required"),
-  phoneNumber: z.string().nonempty("Phone number is required"),
-  avatarUrl: z.string().url("Invalid URL format").optional(),
+// Define the Zod validation schema for the Profile sub-document
+const AdminProfileSchema = z.object({
+  name: z.string().trim(),
+  phoneNumber: z.string().trim(),
+  avatarUrl: z.string().trim().optional(),
 });
 
-// Define the Admin schema
-export const AdminValidation = z.object({
-  email: z.string().email("Invalid email format"),
-  passwordHash: z.string().min(8, "Password must be at least 8 characters long"),
-  role: z.enum(['superAdmin', 'admin'], {
-    errorMap: () => ({ message: "Role must be either 'superAdmin' or 'admin'" }),
-  }),
+// Define the Zod validation schema for the Admin document
+export const AdminValidationSchema = z.object({
+  email: z.string().email().trim(),
+  passwordHash: z.string().min(6, 'Password must be at least 6 characters long'), // Example rule
+  role: z.enum(['superAdmin', 'admin']),
   isDelete: z.boolean().default(false),
   isActive: z.boolean().default(true),
   lastLogin: LoginSchema.optional(),
-  createdAt: z.date().default(() => new Date()),
-  updatedAt: z.date().default(() => new Date()),
   profile: AdminProfileSchema,
-  permissions: z.array(z.string()).min(1, "At least one permission is required"),
+  permissions: z
+    .array(
+      z.enum([
+        'manageUsers',
+        'viewReports',
+        'manageProducts',
+        'manageOrders',
+        'manageCategories',
+        'managePromotions',
+        'managePayments',
+        'manageContent',
+        'manageSettings',
+      ])
+    )
+    .min(1, 'At least one permission is required'),
 });
 
-// Example usage:
-// const validationResult = AdminValidation.safeParse(adminInput);
+
+// Define the Zod validation schema for the AdminAction document
+export const AdminActionValidation = z.object({
+  adminId: z.string().refine((value) => value.match(/^[0-9a-fA-F]{24}$/), {
+    message: 'Invalid Admin ID',
+  }),
+  createdBy: z.string().refine((value) => value.match(/^[0-9a-fA-F]{24}$/), {
+    message: 'Invalid Creator ID',
+  }),
+  actionType: z.enum(['create', 'updatePermissions']),
+  permissions: z.array(z.enum([
+    'manageUsers',
+    'viewReports',
+    'manageProducts',
+    'manageOrders',
+    'manageCategories',
+    'managePromotions',
+    'managePayments',
+    'manageContent',
+    'manageSettings',
+  ])).min(1, { message: 'At least one permission is required' }),
+  timestamp: z.date().optional(),
+});
