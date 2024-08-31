@@ -1,5 +1,4 @@
-export type Tcategory = {
-    name: string,
-    description?: String
-
-}
+export type TCategory = {
+  name: string;
+  description?: String;
+};

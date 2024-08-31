@@ -7,14 +7,7 @@ app.use(express.json());
 app.use(cors());
 
 //routes.....
-app.use('/api/categories',categoryRoutes)
-
-
-
-
-
-
-
+app.use('/api/categories', categoryRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
