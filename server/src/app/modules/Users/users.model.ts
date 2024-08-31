@@ -16,23 +16,23 @@ export const LastLoginSchema = new Schema({
 });
 
 export const ProfileSchema = new Schema({
-  name: { type: String },
-  address: { type: String },
-  phoneNumber: { type: String },
+  name: { type: String, required: true },
+  address: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
   avatarUrl: { type: String },
-  shippingAddress: [AddressSchema],
-  billingAddress: [AddressSchema],
+  shippingAddress: AddressSchema,
+  billingAddress: AddressSchema,
   dateOfBirth: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other'] },
 });
 
 export const CommunicationPreferencesSchema = new Schema({
-  email: { type: Boolean },
-  sms: { type: Boolean },
-  pushNotifications: { type: Boolean },
+  email: { type: Boolean, default: true },
+  sms: { type: Boolean, default: true },
+  pushNotifications: { type: Boolean, default: true },
 });
 
-// user schema
+// User schema
 const UserSchema = new Schema<IUser>(
   {
     email: {
@@ -58,12 +58,12 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
-    lastLogin: [LastLoginSchema],
-    profile: [ProfileSchema],
-    communicationPreferences: [CommunicationPreferencesSchema],
+    lastLogin: LastLoginSchema,
+    profile: ProfileSchema,
+    communicationPreferences: CommunicationPreferencesSchema,
   },
   { timestamps: true },
 );
 
-// user Model
-export const UserModel = model<IUser>('categorie', UserSchema);
+// User Model
+export const UserModel = model<IUser>('User', UserSchema);
