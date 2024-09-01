@@ -1,5 +1,5 @@
-export type Tcategory = {
-    name: string,
-    description?: String
-
-}
+export interface TCategory {
+  name: string;
+  description?: String;
+  isActive?:boolean
+};
