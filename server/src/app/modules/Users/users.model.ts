@@ -74,6 +74,10 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       trim: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
     passwordHash: {
       type: String,
       required: [true, 'Password is required'],

@@ -60,6 +60,7 @@ export interface IVendorProfile {
 // User Interface
 export interface IUser {
   email: string;
+  emailVerified: boolean;
   passwordHash: string;
   role: 'user' | 'vendor';
   isDelete: boolean;
