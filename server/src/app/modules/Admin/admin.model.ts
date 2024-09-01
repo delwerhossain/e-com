@@ -24,6 +24,10 @@ const AdminSchema = new Schema<IAdmin>(
       unique: true,
       trim: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
     passwordHash: {
       type: String,
       required: [true, 'Password is required'],
