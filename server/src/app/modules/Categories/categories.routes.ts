@@ -1,12 +1,12 @@
 import express from 'express';
-import { categoryControllers } from './categories.controller';
-const router = express.Router()
+import { CategoryControllers } from './categories.controller';
+const router = express.Router();
 
 // Define routes
-router.get('/')
-router.get('/')
-router.post('/', categoryControllers.createCategory)
-router.delete('/')
-router.patch('/')
+router.get('/',CategoryControllers.getCategory);
+router.get('/:id',CategoryControllers.getACategory);
+router.post('/', CategoryControllers.createCategory);
+router.delete('/:id',CategoryControllers.deleteCategory);
+router.put('/status/:id',CategoryControllers.isActiveCategory);
 
-export const categoryRoutes = router
+export const categoryRoutes = router;
