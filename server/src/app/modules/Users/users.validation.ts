@@ -55,6 +55,7 @@ const VendorProfileSchema = z.object({
 // User Schema with Conditional Profile Validation
 const UserSchema = z.object({
   email: z.string().email().trim(),
+  emailVerified: z.boolean().default(false),
   passwordHash: z.string().trim(),
   role: z.enum(['user', 'vendor']),
   isDelete: z.boolean().default(false),
@@ -70,3 +71,10 @@ const UserSchema = z.object({
     pushNotifications: z.boolean().default(true),
   }).optional(),
 });
+
+const userValidation = UserSchema;
+const userUpdateValidation = UserSchema.partial();
+export const UserValidation = {
+  userValidation,
+  userUpdateValidation,
+};
