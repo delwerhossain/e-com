@@ -1,4 +1,4 @@
-export type TCategory = {
+export interface TCategory {
   name: string;
   description?: String;
 };
