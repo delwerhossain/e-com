@@ -10,4 +10,8 @@ export const categoryValidation = z.object({
     .string()
     .optional()
     .transform(val => (val ? val.trim() : val)),
+
+  isActive: z
+    .boolean()
+    .optional()
 });

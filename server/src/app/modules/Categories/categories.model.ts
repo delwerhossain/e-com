@@ -15,9 +15,14 @@ const categorySchema = new Schema<TCategory>(
       required: false,
       trim: true,
     },
+    isActive: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
   },
   { timestamps: true },
 );
 
 // category Model
-export const categoryModel = model<TCategory>('category', categorySchema);
+export const categoryModel = model<TCategory>('Category', categorySchema);
