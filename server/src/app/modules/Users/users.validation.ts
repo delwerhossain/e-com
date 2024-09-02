@@ -47,7 +47,7 @@ const VendorProfileSchema = z.object({
     .optional(),
   businessCategoryID: z
     .string()
-    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    .refine(val => mongoose.Types.ObjectId.isValid(val), {
       message: 'Invalid business Category ID',
     }),
   websiteUrl: z.string().trim().optional(),
@@ -83,10 +83,13 @@ const BaseUserSchema = z.object({
 
 // Conditional Validation Schema
 const UserValidationSchema = BaseUserSchema.refine(
-  (data) => {
+  data => {
     // Allow profile to be optional, but validate it if present
     if (data.role === 'vendor') {
-      if (data.profile && !VendorProfileSchema.safeParse(data.profile).success) {
+      if (
+        data.profile &&
+        !VendorProfileSchema.safeParse(data.profile).success
+      ) {
         return false;
       }
     } else {
@@ -99,9 +102,8 @@ const UserValidationSchema = BaseUserSchema.refine(
   {
     message: 'Profile data is invalid for the given role',
     path: ['profile'],
-  }
+  },
 );
-
 
 // Partial Update Schemas (before refine)
 const userUpdateValidation = BaseUserSchema.partial();

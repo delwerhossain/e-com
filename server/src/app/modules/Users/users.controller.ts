@@ -144,7 +144,8 @@ const updateAUser = async (req: Request, res: Response) => {
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+      const saltRounds =
+        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
       updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
     }
 
@@ -160,7 +161,10 @@ const updateAUser = async (req: Request, res: Response) => {
     const validatedData = UserValidation.userUpdateValidation.parse(updateData);
 
     // Update the user in the database
-    const updatedUser = await UserService.updateAUserInToDB(userID, validatedData);
+    const updatedUser = await UserService.updateAUserInToDB(
+      userID,
+      validatedData,
+    );
 
     // If the user is not found, return a 404 response
     if (!updatedUser) {
@@ -204,7 +208,9 @@ const updateAUser = async (req: Request, res: Response) => {
       message: 'Failed to update the user.',
       errorDetails: {
         errorType: error.name || 'UnknownError',
-        message: error.message || 'An unexpected error occurred while updating the user.',
+        message:
+          error.message ||
+          'An unexpected error occurred while updating the user.',
       },
     });
   }

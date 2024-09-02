@@ -6,18 +6,15 @@ const createCategory = async (category: ICategory) => {
   return result;
 };
 
-
 const getCategories = async () => {
   const result = await CategoryModel.find();
   return result;
 };
 
-
 const getACategory = async (id: string) => {
   const result = await CategoryModel.findById(id);
   return result;
 };
-
 
 const isActiveCategory = async (id: string) => {
   const searchCategory = await CategoryModel.findById(id);
@@ -28,7 +25,7 @@ const isActiveCategory = async (id: string) => {
   const result = await CategoryModel.findByIdAndUpdate(
     id,
     { $set: { isActive: updatedStatus } },
-    { new: true }
+    { new: true },
   );
 
   return result;
@@ -39,7 +36,11 @@ const updateACategory = async (id: string, updatedData: Partial<ICategory>) => {
   if (!searchCategory) {
     throw new Error('Category not found');
   }
-  const result = await CategoryModel.findByIdAndUpdate(id, { $set: updatedData }, { new: true });
+  const result = await CategoryModel.findByIdAndUpdate(
+    id,
+    { $set: updatedData },
+    { new: true },
+  );
   return result;
 };
 
@@ -52,12 +53,11 @@ const deleteCategory = async (id: string) => {
   return result;
 };
 
-
 export const CategoryServices = {
   createCategory,
   getCategories,
   getACategory,
   isActiveCategory,
   deleteCategory,
-  updateACategory
+  updateACategory,
 };

@@ -9,9 +9,8 @@
 //       return res.status(403).json({ message: "Forbidden: You don't have the required permissions." });
 //     };
 //   }
-  
+
 //   // Example usage in an Express route
 //   app.get('/admin/orders', hasPermission('manageOrders'), (req, res) => {
 //     // Fetch and display orders
 //   });
-  
