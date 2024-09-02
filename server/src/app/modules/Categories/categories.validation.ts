@@ -13,5 +13,11 @@ export const categoryValidation = z.object({
 
   isActive: z
     .boolean()
-    .optional()
+    .optional(),
+  isDeleted: z
+    .boolean()
+    .optional(),
+  categoryImage: z
+    .string()
+    .nonempty({ message: 'Category image is required' })
 });

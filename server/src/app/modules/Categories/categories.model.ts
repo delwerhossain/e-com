@@ -1,8 +1,8 @@
 import { Schema, model } from 'mongoose';
-import { TCategory } from './categories.interface';
+import { ICategory } from './categories.interface';
 
 // category schema
-const categorySchema = new Schema<TCategory>(
+const categorySchema = new Schema<ICategory>(
   {
     name: {
       type: String,
@@ -20,9 +20,18 @@ const categorySchema = new Schema<TCategory>(
       required: false,
       default: true
     },
+    isDeleted: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    categoryImage: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true },
 );
 
 // category Model
-export const categoryModel = model<TCategory>('Category', categorySchema);
+export const categoryModel = model<ICategory>('Category', categorySchema);
