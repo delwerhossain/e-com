@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IAddress, ICommunicationPreferences, ILoginDetails, IUser, IUserProfile, IVendorProfile } from './users.interface';
-import { object } from 'zod';
+
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -97,7 +97,6 @@ const UserSchema = new Schema<IUser>(
     lastLogin: LastLoginSchema,
     profile: {
       type: Schema.Types.Mixed,
-      required: true,
       validate: {
         validator: function (v: any) {
           if (this.role === 'vendor') {
@@ -116,5 +115,11 @@ const UserSchema = new Schema<IUser>(
   },
   { timestamps: true },
 );
+
+
+// UserSchema.pre('save', function (next) {
+//   this.set('passwordHash', undefined, { strict: false });
+//   next();
+// });
 
 export const UserModel = model<IUser>('User', UserSchema);

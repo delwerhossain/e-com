@@ -60,12 +60,12 @@ export interface IVendorProfile {
 // User Interface
 export interface IUser {
   email: string;
-  emailVerified: boolean;
+  emailVerified?: boolean;
   passwordHash: string;
   role: 'user' | 'vendor';
-  isDelete: boolean;
-  isActive: boolean;
+  isDelete?: boolean;
+  isActive?: boolean;
   lastLogin?: ILoginDetails;
-  profile: IUserProfile | IVendorProfile; // Conditional profile based on role
+  profile?: IUserProfile | IVendorProfile; // Conditional profile based on role
   communicationPreferences?: ICommunicationPreferences;
 }
