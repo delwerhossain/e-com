@@ -1,5 +1,8 @@
-export interface TCategory {
+export interface ICategory {
   name: string;
   description?: String;
-  isActive?:boolean
+  isActive?:boolean;
+  isDeleted?:boolean;
+  categoryImage:string
+
 };
