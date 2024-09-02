@@ -1,3 +1,5 @@
+import { ObjectId } from "mongoose";
+
 export interface ISubCategory {
     name: string;
     description?: String;
@@ -5,6 +7,6 @@ export interface ISubCategory {
     isDeleted?: boolean;
     subCategoryImage: string;
     categoryName?: string;
-    categoryId: string
+    categoryId: ObjectId
 
 };

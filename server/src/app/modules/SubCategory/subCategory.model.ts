@@ -1,7 +1,7 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 import { ISubCategory } from './subCategory.interface';
 
-// subCategory schema
+// SubCategory schema
 const subCategorySchema = new Schema<ISubCategory>(
     {
         name: {
@@ -12,34 +12,37 @@ const subCategorySchema = new Schema<ISubCategory>(
         },
         description: {
             type: String,
-            required: false,
             trim: true,
+            required: false,
         },
         isActive: {
             type: Boolean,
-            required: false,
-            default: true
+            default: true,
         },
         isDeleted: {
             type: Boolean,
-            required: false,
-            default: false
+            default: false,
         },
         subCategoryImage: {
             type: String,
-            required: true,
+            required: [true, 'Subcategory image is required'],
         },
         categoryId: {
-            type: String,
-            required: true,
+            type: Schema.Types.ObjectId,
+            required: [true, 'Category ID is required'],
+            validate: {
+                validator: (value: any) => Types.ObjectId.isValid(value),
+                message: 'Invalid ObjectId format for categoryId',
+            },
         },
         categoryName: {
             type: String,
+            trim: true,
             required: false,
         },
     },
     { timestamps: true },
 );
 
-// Subcategory Model
+// SubCategory Model
 export const SubCategoryModel = model<ISubCategory>('Subcategory', subCategorySchema);

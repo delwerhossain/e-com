@@ -5,32 +5,36 @@ const subCategoryValidation = z.object({
         .string({
             required_error: 'Subcategory name is required',
         })
-        .trim()
         .min(1, 'Subcategory name cannot be empty')
-        .max(255, 'Subcategory name must be at most 255 characters long'),
+        .max(255, 'Subcategory name must be at most 255 characters long')
+        .transform((val) => val.trim()),
 
     description: z
         .string()
-        .trim()
-        .optional(),
+        .optional()
+        .transform((val) => (val ? val.trim() : val)),
 
-    isActive: z.boolean().optional().default(true),
+    isActive: z.boolean().default(true),
 
-    isDeleted: z.boolean().optional().default(false),
+    isDeleted: z.boolean().default(false),
 
     subCategoryImage: z
         .string({
             required_error: 'Subcategory image is required',
-        })
-        .url('Invalid URL format for subcategory image'),
+        }),
 
     categoryId: z
         .string({
             required_error: 'Category ID is required',
         })
-        .length(24, 'Category ID must be a valid 24-character ObjectId'),
+        .refine((val) => /^[a-f\d]{24}$/i.test(val), {
+            message: 'Invalid ObjectId format for categoryId',
+        }),  // Custom validation to ensure ObjectId format
 
-    categoryName: z.string().optional()
+    categoryName: z
+        .string()
+        .optional()
+        .transform((val) => (val ? val.trim() : val)),
 });
 
 export default subCategoryValidation;
