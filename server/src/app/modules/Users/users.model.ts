@@ -1,6 +1,12 @@
-import mongoose from 'mongoose';
 import { Schema, model } from 'mongoose';
-import { IAddress, ICommunicationPreferences, ILoginDetails, IUser, IUserProfile, IVendorProfile } from './users.interface';
+import {
+  IAddress,
+  ICommunicationPreferences,
+  ILoginDetails,
+  IUser,
+  IUserProfile,
+  IVendorProfile,
+} from './users.interface';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -19,8 +25,8 @@ export const LastLoginSchema = new Schema<ILoginDetails>({
 
 // User Profile Schema
 export const UserProfileSchema = new Schema<IUserProfile>({
-  name: { type: String, required: true, trim: true },
-  phoneNumber: { type: String, required: true, trim: true },
+  name: { type: String, trim: true },
+  phoneNumber: { type: String, trim: true },
   avatarUrl: { type: String, trim: true },
   shippingAddress: AddressSchema,
   billingAddress: AddressSchema,
@@ -31,15 +37,17 @@ export const UserProfileSchema = new Schema<IUserProfile>({
 // Vendor Profile Schema
 export const VendorProfileSchema = new Schema<IVendorProfile>({
   businessName: { type: String, required: true, trim: true },
-  businessAddress: { type: String, required: true, trim: true },
-  phoneNumber: { type: String, required: true, trim: true },
   avatarUrl: { type: String, trim: true },
   description: { type: String, trim: true },
   ratings: {
     averageRating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
   },
-  businessCategory: { type: String, trim: true },
+  businessCategoryID: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+    trim: true,
+  },
   websiteUrl: { type: String, trim: true },
   socialMediaLinks: {
     facebook: { type: String, trim: true },
@@ -50,20 +58,24 @@ export const VendorProfileSchema = new Schema<IVendorProfile>({
   contactInfo: {
     contactEmail: { type: String, trim: true },
     contactPhone: { type: String, trim: true },
-    contactAddress: { type: String, trim: true },
+    contactAddress: AddressSchema,
   },
 });
 
 // Communication Preferences Schema
-export const CommunicationPreferencesSchema = new Schema<ICommunicationPreferences>({
-  email: { type: Boolean, default: true },
-  sms: { type: Boolean, default: true },
-  pushNotifications: { type: Boolean, default: true },
-});
+export const CommunicationPreferencesSchema =
+  new Schema<ICommunicationPreferences>({
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: true },
+    pushNotifications: { type: Boolean, default: true },
+  });
 
 // Define Models
 const UserProfileModel = model<IUserProfile>('UserProfile', UserProfileSchema);
-const VendorProfileModel = model<IVendorProfile>('VendorProfile', VendorProfileSchema);
+const VendorProfileModel = model<IVendorProfile>(
+  'VendorProfile',
+  VendorProfileSchema,
+);
 
 // User Schema
 const UserSchema = new Schema<IUser>(
@@ -73,6 +85,10 @@ const UserSchema = new Schema<IUser>(
       required: [true, 'Email is required'],
       unique: true,
       trim: true,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
     },
     passwordHash: {
       type: String,
@@ -95,17 +111,22 @@ const UserSchema = new Schema<IUser>(
     lastLogin: LastLoginSchema,
     profile: {
       type: Schema.Types.Mixed,
-      required: true,
       validate: {
         validator: function (v: any) {
           if (this.role === 'vendor') {
             // Create an instance of VendorProfileModel and validate
             const vendorProfile = new VendorProfileModel(v);
-            return vendorProfile.validate().then(() => true).catch(() => false);
+            return vendorProfile
+              .validate()
+              .then(() => true)
+              .catch(() => false);
           }
           // Create an instance of UserProfileModel and validate
           const userProfile = new UserProfileModel(v);
-          return userProfile.validate().then(() => true).catch(() => false);
+          return userProfile
+            .validate()
+            .then(() => true)
+            .catch(() => false);
         },
         message: 'Profile data is invalid for the given role',
       },
@@ -114,5 +135,10 @@ const UserSchema = new Schema<IUser>(
   },
   { timestamps: true },
 );
+
+// UserSchema.pre('save', function (next) {
+//   this.set('passwordHash', undefined, { strict: false });
+//   next();
+// });
 
 export const UserModel = model<IUser>('User', UserSchema);

@@ -18,12 +18,12 @@ const categorySchema = new Schema<ICategory>(
     isActive: {
       type: Boolean,
       required: false,
-      default: true
+      default: true,
     },
     isDeleted: {
       type: Boolean,
       required: false,
-      default: false
+      default: false,
     },
     categoryImage: {
       type: String,

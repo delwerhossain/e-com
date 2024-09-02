@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 // Address Interface
 export interface IAddress {
   street?: string;
@@ -34,15 +36,13 @@ export interface IUserProfile {
 // Vendor Profile Interface
 export interface IVendorProfile {
   businessName: string;
-  businessAddress: string;
-  phoneNumber: string;
   avatarUrl?: string;
   description?: string;
   ratings?: {
     averageRating: number;
     reviewCount: number;
   };
-  businessCategory?: string;
+  businessCategoryID?: Types.ObjectId;
   websiteUrl?: string;
   socialMediaLinks?: {
     facebook?: string;
@@ -53,18 +53,19 @@ export interface IVendorProfile {
   contactInfo?: {
     contactEmail?: string;
     contactPhone?: string;
-    contactAddress?: string;
+    contactAddress?: IAddress;
   };
 }
 
 // User Interface
 export interface IUser {
   email: string;
+  emailVerified?: boolean;
   passwordHash: string;
   role: 'user' | 'vendor';
-  isDelete: boolean;
-  isActive: boolean;
+  isDelete?: boolean;
+  isActive?: boolean;
   lastLogin?: ILoginDetails;
-  profile: IUserProfile | IVendorProfile; // Conditional profile based on role
+  profile?: IUserProfile | IVendorProfile; // Conditional profile based on role
   communicationPreferences?: ICommunicationPreferences;
 }

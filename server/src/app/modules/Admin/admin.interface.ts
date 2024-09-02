@@ -16,6 +16,7 @@ export interface IAdminProfile {
 // Define the Admin interface
 export interface IAdmin extends Document {
   email: string;
+  emailVerified?: boolean;
   passwordHash: string;
   role: 'superAdmin' | 'admin';
   isDelete?: boolean;
