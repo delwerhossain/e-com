@@ -1,4 +1,12 @@
+import mongoose from 'mongoose';
 import { z } from 'zod';
+
+// MongoDB ObjectId validation using Mongoose
+// const objectIdSchema = z
+//   .string()
+//   .refine(val => mongoose.Types.ObjectId.isValid(val), {
+//     message: 'Invalid MongoDB ObjectId',
+//   });
 
 // Define the Zod validation schema for the Login sub-document
 const LoginSchema = z.object({
@@ -44,11 +52,11 @@ export const AdminValidationSchema = z.object({
 
 // Define the Zod validation schema for the AdminAction document
 export const AdminActionValidationSchema = z.object({
-  adminId: z.string().refine(value => value.match(/^[0-9a-fA-F]{24}$/), {
-    message: 'Invalid Admin ID',
+  adminId: z.string().refine(val => mongoose.Types.ObjectId.isValid(val), {
+    message: 'Invalid admin Id',
   }),
-  createdBy: z.string().refine(value => value.match(/^[0-9a-fA-F]{24}$/), {
-    message: 'Invalid Creator ID',
+  createdBy: z.string().refine(val => mongoose.Types.ObjectId.isValid(val), {
+    message: 'Invalid creator Id',
   }),
   actionType: z.enum(['create', 'updatePermissions']),
   permissions: z
