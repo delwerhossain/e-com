@@ -73,70 +73,70 @@ const getASubCategory = async (req: Request, res: Response) => {
         });
     }
 };
-const isActiveCategory = async (req: Request, res: Response) => {
+const isActiveSubCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params
-        const result = await CategoryServices.isActiveCategory(id);
+        const result = await SubCategoryServices.isActiveSubCategory(id);
         res.status(200).json({
             success: true,
-            message: 'Category active status updated successfully!',
+            message: 'SubCategory active status updated successfully!',
             data: result,
         });
     } catch (error: any) {
         res.status(500).json({
             success: false,
-            message: 'Failed to update category status',
+            message: 'Failed to update SubCategory status',
             errorDetails: {
                 errorType: error.name || 'UnknownError',
                 message:
-                    error.issues[0].message || 'An unexpected error occurred while creating the category.',
+                    error.issues[0].message || 'An unexpected error occurred while creating the SubCategory.',
                 errorPath: error.issues[0].path[0] || 'Unknown path',
                 error: error,
             },
         });
     }
 };
-const updateACategory = async (req: Request, res: Response) => {
+const updateASubCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params
         const updatedData = req.body
-        const result = await CategoryServices.updateACategory(id, updatedData);
+        const result = await SubCategoryServices.updateASubCategory(id, updatedData);
         res.status(200).json({
             success: true,
-            message: 'Category details updated successfully!',
+            message: 'SubCategory details updated successfully!',
             data: result,
         });
     } catch (error: any) {
         res.status(500).json({
             success: false,
-            message: 'Failed to update category',
+            message: 'Failed to update SubCategory',
             errorDetails: {
                 errorType: error.name || 'UnknownError',
                 message:
-                    error.issues[0].message || 'An unexpected error occurred while creating the category.',
+                    error.issues[0].message || 'An unexpected error occurred while creating the SubCategory.',
                 errorPath: error.issues[0].path[0] || 'Unknown path',
                 error: error,
             },
         });
     }
 };
-const deleteCategory = async (req: Request, res: Response) => {
+const deleteASubCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params
-        const result = await CategoryServices.deleteCategory(id);
+        const result = await SubCategoryServices.deleteASubCategory(id);
         res.status(200).json({
             success: true,
-            message: 'Category deleted successfully!',
+            message: 'SubCategory deleted successfully!',
             data: result,
         });
     } catch (error: any) {
         res.status(500).json({
             success: false,
-            message: 'Failed to delete category',
+            message: 'Failed to delete SubCategory',
             errorDetails: {
                 errorType: error.name || 'UnknownError',
                 message:
-                    error.issues[0].message || 'An unexpected error occurred while creating the category.',
+                    error.issues[0].message || 'An unexpected error occurred while creating the SubCategory.',
                 errorPath: error.issues[0].path[0] || 'Unknown path',
                 error: error,
             },
@@ -147,8 +147,8 @@ const deleteCategory = async (req: Request, res: Response) => {
 export const SubCategoryControllers = {
     createSubCategory,
     getSubCategories,
-    getACategory,
-    isActiveCategory,
-    deleteCategory,
-    updateACategory
+    getASubCategory,
+    isActiveSubCategory,
+    deleteASubCategory,
+    updateASubCategory
 };
