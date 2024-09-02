@@ -18,6 +18,7 @@ export const categoryValidation = z.object({
     .boolean()
     .optional(),
   categoryImage: z
-    .string()
-    .nonempty({ message: 'Category image is required' })
+    .string({
+      required_error: 'Category image is required',
+    }).url('Invalid URL format for Category image'),
 });

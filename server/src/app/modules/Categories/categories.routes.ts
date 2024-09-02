@@ -9,6 +9,6 @@ router.post('/', CategoryControllers.createCategory);
 router.delete('/:id', CategoryControllers.deleteCategory);
 router.put('/status/:id', CategoryControllers.isActiveCategory);
 router.put('/:id', CategoryControllers.updateACategory);
-router.put('/:id', CategoryControllers.updateACategory);
+
 
 export const categoryRoutes = router;
