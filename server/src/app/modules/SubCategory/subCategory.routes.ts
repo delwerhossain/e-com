@@ -4,8 +4,8 @@ const router = express.Router();
 
 // Define routes
 router.get('/', SubCategoryControllers.createSubCategory);
-router.get('/:id', SubCategoryControllers.getACategory);
-router.post('/', SubCategoryControllers.createCategory);
+router.get('/:id', SubCategoryControllers.getASubCategory);
+router.post('/', SubCategoryControllers.getSubCategories);
 router.delete('/:id', SubCategoryControllers.deleteCategory);
 router.put('/status/:id', SubCategoryControllers.isActiveCategory);
 router.put('/:id', SubCategoryControllers.updateACategory);

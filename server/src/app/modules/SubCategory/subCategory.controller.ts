@@ -28,18 +28,18 @@ const createSubCategory = async (req: Request, res: Response) => {
         });
     }
 };
-const getCategories = async (req: Request, res: Response) => {
+const getSubCategories = async (req: Request, res: Response) => {
     try {
-        const result = await CategoryServices.getCategories();
+        const result = await SubCategoryServices.getSubCategories();
         res.status(200).json({
             success: true,
-            message: 'Categories fetch successfully!',
+            message: 'Subcategories fetch successfully!',
             data: result,
         });
     } catch (error: any) {
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch categories',
+            message: 'Failed to fetch Subcategories',
             errorDetails: {
                 errorType: error.name || 'UnknownError',
                 message:
@@ -50,10 +50,10 @@ const getCategories = async (req: Request, res: Response) => {
         });
     }
 };
-const getACategory = async (req: Request, res: Response) => {
+const getASubCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params
-        const result = await CategoryServices.getACategory(id);
+        const result = await SubCategoryServices.getASubCategory(id);
         res.status(200).json({
             success: true,
             message: 'Category fetch successfully!',
@@ -146,7 +146,7 @@ const deleteCategory = async (req: Request, res: Response) => {
 
 export const SubCategoryControllers = {
     createSubCategory,
-    getCategories,
+    getSubCategories,
     getACategory,
     isActiveCategory,
     deleteCategory,

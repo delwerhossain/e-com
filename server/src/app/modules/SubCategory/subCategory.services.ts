@@ -8,14 +8,14 @@ const createSubCategory = async (subCategory: ISubCategory) => {
 };
 
 
-const getCategories = async () => {
-  const result = await CategoryModel.find();
+const getSubCategories = async () => {
+  const result = await SubCategoryModel.find();
   return result;
 };
 
 
-const getACategory = async (id: string) => {
-  const result = await CategoryModel.findById(id);
+const getASubCategory = async (id: string) => {
+  const result = await SubCategoryModel.findById(id);
   return result;
 };
 
@@ -56,8 +56,8 @@ const deleteCategory = async (id: string) => {
 
 export const SubCategoryServices = {
   createSubCategory,
-  getCategories,
-  getACategory,
+  getSubCategories,
+  getASubCategory,
   isActiveCategory,
   deleteCategory,
   updateACategory
