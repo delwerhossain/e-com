@@ -1,7 +1,7 @@
-import { TCategory } from './categories.interface';
+import { ICategory } from './categories.interface';
 import { categoryModel } from './categories.model';
 
-const createCategory = async (category: TCategory) => {
+const createCategory = async (category: ICategory) => {
   const result = await categoryModel.create(category);
   return result;
 };
