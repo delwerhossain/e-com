@@ -41,5 +41,5 @@ const subCategorySchema = new Schema<ISubCategory>(
     { timestamps: true },
 );
 
-// category Model
+// Subcategory Model
 export const SubCategoryModel = model<ISubCategory>('Subcategory', subCategorySchema);
