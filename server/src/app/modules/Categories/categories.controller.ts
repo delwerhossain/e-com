@@ -27,9 +27,9 @@ const createCategory = async (req: Request, res: Response) => {
     });
   }
 };
-const getCategory = async (req: Request, res: Response) => {
+const getCategories = async (req: Request, res: Response) => {
   try {
-    const result = await CategoryServices.getCategory();
+    const result = await CategoryServices.getCategories();
     res.status(200).json({
       success: true,
       message: 'Categories fetch successfully!',
@@ -95,6 +95,30 @@ const isActiveCategory = async (req: Request, res: Response) => {
     });
   }
 };
+const updateACategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const updatedData = req.body
+    const result = await CategoryServices.updateACategory(id, updatedData);
+    res.status(200).json({
+      success: true,
+      message: 'Category details updated successfully!',
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update category',
+      errorDetails: {
+        errorType: error.name || 'UnknownError',
+        message:
+          error.issues[0].message || 'An unexpected error occurred while creating the category.',
+        errorPath: error.issues[0].path[0] || 'Unknown path',
+        error: error,
+      },
+    });
+  }
+};
 const deleteCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
@@ -121,8 +145,9 @@ const deleteCategory = async (req: Request, res: Response) => {
 
 export const CategoryControllers = {
   createCategory,
-  getCategory,
+  getCategories,
   getACategory,
   isActiveCategory,
-  deleteCategory
+  deleteCategory,
+  updateACategory
 };
