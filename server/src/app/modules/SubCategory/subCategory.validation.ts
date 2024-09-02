@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const subCategorySchema = z.object({
+const subCategoryValidation = z.object({
     name: z
         .string({
             required_error: 'Subcategory name is required',
@@ -33,4 +33,4 @@ const subCategorySchema = z.object({
     categoryName: z.string().optional()
 });
 
-export default subCategorySchema;
+export default subCategoryValidation;
