@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { z } from 'zod';
 
 // Address Schema
@@ -17,8 +18,8 @@ const LastLoginSchema = z.object({
 
 // User Profile Schema
 const UserProfileSchema = z.object({
-  name: z.string().trim(),
-  phoneNumber: z.string().trim(),
+  name: z.string().trim().optional(),
+  phoneNumber: z.string().trim().optional(),
   avatarUrl: z.string().trim().optional(),
   shippingAddress: AddressSchema.optional(),
   billingAddress: AddressSchema.optional(),
@@ -29,15 +30,15 @@ const UserProfileSchema = z.object({
 // Vendor Profile Schema
 const VendorProfileSchema = z.object({
   businessName: z.string().trim(),
-  businessAddress: z.string().trim(),
-  phoneNumber: z.string().trim(),
   avatarUrl: z.string().trim().optional(),
   description: z.string().trim().optional(),
   ratings: z.object({
     averageRating: z.number().default(0),
     reviewCount: z.number().default(0),
   }).optional(),
-  businessCategory: z.string().trim().optional(),
+  businessCategoryID: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: "Invalid business Category ID",
+  }),
   websiteUrl: z.string().trim().optional(),
   socialMediaLinks: z.object({
     facebook: z.string().trim().optional(),
@@ -48,7 +49,7 @@ const VendorProfileSchema = z.object({
   contactInfo: z.object({
     contactEmail: z.string().trim().optional(),
     contactPhone: z.string().trim().optional(),
-    contactAddress: z.string().trim().optional(),
+    contactAddress: AddressSchema.optional(),
   }).optional(),
 });
 
@@ -57,14 +58,14 @@ const UserSchema = z.object({
   email: z.string().email().trim(),
   emailVerified: z.boolean().default(false),
   passwordHash: z.string().trim(),
-  role: z.enum(['user', 'vendor']),
+  role: z.enum(['user', 'vendor']).default("user"),
   isDelete: z.boolean().default(false),
   isActive: z.boolean().default(true),
   lastLogin: LastLoginSchema.optional(),
   profile: z.union([
     UserProfileSchema, // If role is 'user'
     VendorProfileSchema, // If role is 'vendor'
-  ]),
+  ]).optional(),
   communicationPreferences: z.object({
     email: z.boolean().default(true),
     sms: z.boolean().default(true),

@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 // Address Interface
 export interface IAddress {
   street?: string;
@@ -34,15 +36,13 @@ export interface IUserProfile {
 // Vendor Profile Interface
 export interface IVendorProfile {
   businessName: string;
-  businessAddress: string;
-  phoneNumber: string;
   avatarUrl?: string;
   description?: string;
   ratings?: {
     averageRating: number;
     reviewCount: number;
   };
-  businessCategory?: string;
+  businessCategoryID?: Types.ObjectId;
   websiteUrl?: string;
   socialMediaLinks?: {
     facebook?: string;
@@ -53,7 +53,7 @@ export interface IVendorProfile {
   contactInfo?: {
     contactEmail?: string;
     contactPhone?: string;
-    contactAddress?: string;
+    contactAddress?: IAddress;
   };
 }
 

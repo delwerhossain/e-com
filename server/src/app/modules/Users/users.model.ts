@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
 import { Schema, model } from 'mongoose';
 import { IAddress, ICommunicationPreferences, ILoginDetails, IUser, IUserProfile, IVendorProfile } from './users.interface';
+import { object } from 'zod';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -19,8 +19,8 @@ export const LastLoginSchema = new Schema<ILoginDetails>({
 
 // User Profile Schema
 export const UserProfileSchema = new Schema<IUserProfile>({
-  name: { type: String, required: true, trim: true },
-  phoneNumber: { type: String, required: true, trim: true },
+  name: { type: String,  trim: true },
+  phoneNumber: { type: String,  trim: true },
   avatarUrl: { type: String, trim: true },
   shippingAddress: AddressSchema,
   billingAddress: AddressSchema,
@@ -31,15 +31,13 @@ export const UserProfileSchema = new Schema<IUserProfile>({
 // Vendor Profile Schema
 export const VendorProfileSchema = new Schema<IVendorProfile>({
   businessName: { type: String, required: true, trim: true },
-  businessAddress: { type: String, required: true, trim: true },
-  phoneNumber: { type: String, required: true, trim: true },
   avatarUrl: { type: String, trim: true },
   description: { type: String, trim: true },
   ratings: {
     averageRating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
   },
-  businessCategory: { type: String, trim: true },
+  businessCategoryID: { type: Schema.Types.ObjectId, ref: 'Category', trim: true },
   websiteUrl: { type: String, trim: true },
   socialMediaLinks: {
     facebook: { type: String, trim: true },
@@ -50,7 +48,7 @@ export const VendorProfileSchema = new Schema<IVendorProfile>({
   contactInfo: {
     contactEmail: { type: String, trim: true },
     contactPhone: { type: String, trim: true },
-    contactAddress: { type: String, trim: true },
+    contactAddress: AddressSchema,
   },
 });
 
