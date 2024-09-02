@@ -1,8 +1,9 @@
-import { ICategory } from './categories.interface';
-import { CategoryModel } from './categories.model';
+import { ISubCategory } from "./subCategory.interface";
+import { SubCategoryModel } from "./subCategory.model";
 
-const createCategory = async (category: ICategory) => {
-  const result = await CategoryModel.create(category);
+
+const createSubCategory = async (subCategory: ISubCategory) => {
+  const result = await SubCategoryModel.create(subCategory);
   return result;
 };
 
@@ -53,8 +54,8 @@ const deleteCategory = async (id: string) => {
 };
 
 
-export const CategoryServices = {
-  createCategory,
+export const SubCategoryServices = {
+  createSubCategory,
   getCategories,
   getACategory,
   isActiveCategory,
