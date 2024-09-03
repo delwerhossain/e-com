@@ -8,5 +8,5 @@ export interface ISubCategory {
     subCategoryImage: string;
     categoryName?: string;
     categoryId: Types.ObjectId
-
 };
+

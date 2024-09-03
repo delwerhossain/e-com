@@ -11,14 +11,11 @@ export const categoryValidation = z.object({
     .optional()
     .transform(val => (val ? val.trim() : val)),
 
-  isActive: z
-    .boolean()
-    .optional(),
-  isDeleted: z
-    .boolean()
-    .optional(),
+  isActive: z.boolean().optional(),
+  isDeleted: z.boolean().optional(),
   categoryImage: z
     .string({
       required_error: 'Category image is required',
-    }).url('Invalid URL format for Category image'),
+    })
+    .url('Invalid URL format for Category image'),
 });
