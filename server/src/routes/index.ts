@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { categoryRoutes } from '../app/modules/Categories/categories.routes';
 import { userRoutes } from '../app/modules/Users/users.routes';
+import { subcategoryRoutes } from '../app/modules/SubCategory/subCategory.routes';
 
 const router = Router();
 
@@ -10,8 +11,8 @@ const moduleRoutes = [
     route: categoryRoutes,
   },
   {
-    path: '/sub',
-    route: categoryRoutes,
+    path: '/subcategories',
+    route: subcategoryRoutes,
   },
   {
     path: '/user',
