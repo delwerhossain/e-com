@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 
 export interface ISubCategory {
     name: string;
@@ -7,6 +7,6 @@ export interface ISubCategory {
     isDeleted?: boolean;
     subCategoryImage: string;
     categoryName?: string;
-    categoryId: ObjectId
+    categoryId: Types.ObjectId
 
 };
