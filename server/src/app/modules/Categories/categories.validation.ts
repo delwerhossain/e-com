@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 export const categoryValidation = z.object({
   name: z
-    .string()
+    .string({
+      required_error: 'Category name is required',
+    })
     .nonempty({ message: 'Category name is required' })
     .transform(val => val.trim()),
 
@@ -17,5 +19,5 @@ export const categoryValidation = z.object({
     .string({
       required_error: 'Category image is required',
     })
-    .url('Invalid URL format for Category image'),
+    .url('Invalid URL format for Category image').nonempty({ message: 'URL cant be empty' }),
 });
