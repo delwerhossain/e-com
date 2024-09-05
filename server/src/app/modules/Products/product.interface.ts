@@ -1,9 +1,9 @@
 import { Types } from "mongoose";
 
 export type TReviews = {
-    reviewer: string;
-    rating: number;
-    comment: string;
+    reviewer?: string;
+    rating?: number;
+    comment?: string;
 }
 
 
@@ -13,11 +13,11 @@ export interface IProduct {
     price: number;
     quantity: number;
     vendorId: Types.ObjectId;
-    subCategoryId: Types.ObjectId;
+    subCategoryId?: Types.ObjectId;
     images: string[] | string;
-    ratings: {
-        averageRating: number;
-        reviewsCount: number;
-        reviews: TReviews[]
+    ratings?: {
+        averageRating?: number;
+        reviewsCount?: number;
+        reviews?: TReviews[]
     }
 }

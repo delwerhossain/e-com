@@ -25,7 +25,7 @@ const subCategoryValidation = z.object({
 
     subCategoryImage: z.string({
         required_error: 'Subcategory image is required',
-    }),
+    }).url('Invalid URL format for Subcategory image'),
 
     categoryId: objectIdSchema.transform((val) => new mongoose.Types.ObjectId(val)),
 
