@@ -14,9 +14,14 @@ export interface IProduct {
     vendorId: Types.ObjectId;
     subCategoryId?: Types.ObjectId;
     images: string[] | string;
+    isFeatured?: boolean;
+    isActive?: boolean;
+    isDeleted?: boolean;
+    isBestProduct?: boolean;
     ratings?: {
         averageRating?: number;
         reviewsCount?: number;
         reviews?: TReviews[]
     }
+ 
 }

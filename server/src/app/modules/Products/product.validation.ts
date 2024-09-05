@@ -25,9 +25,14 @@ export const productValidation = z.object({
     vendorId: objectIdSchema,
     subCategoryId: objectIdSchema.optional(),
     images: z.union([z.array(z.string()), z.string()]),
+    isFeatured: z.boolean().default(false),
+    isActive: z.boolean().default(false),
+    isDeleted: z.boolean().default(false),
+    isBestProduct: z.boolean().default(false),
     ratings: z.object({
         averageRating: z.number().min(0).max(5).optional(),
         reviewsCount: z.number().min(0).optional(),
         reviews: z.array(zReviews).optional(),
     }).optional(),
+
 });

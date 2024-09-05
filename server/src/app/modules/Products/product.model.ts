@@ -15,6 +15,10 @@ const productSchema = new Schema<IProduct>({
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     subCategoryId: { type: Types.ObjectId, ref: 'SubCategory', required: false },
     images: { type: [String], required: true },
+    isFeatured: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
+    isBestProduct: { type: Boolean, default: false },
     ratings: {
         averageRating: { type: Number, default: 0, min: 0, max: 5 },
         reviewsCount: { type: Number, default: 0 },
