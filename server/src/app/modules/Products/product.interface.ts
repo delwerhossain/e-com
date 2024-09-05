@@ -6,7 +6,6 @@ export type TReviews = {
     comment?: string;
 }
 
-
 export interface IProduct {
     name: string;
     description: string;
