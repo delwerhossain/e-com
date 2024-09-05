@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import subCategoryValidation from './subCategory.validation';
 import { SubCategoryServices } from './subCategory.services';
 
-const createSubCategory = async (req: Request, res: Response) => {
+const createSubCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const subCategory = req.body;
     const validatedSubCategory = subCategoryValidation.parse(subCategory);
@@ -14,21 +14,10 @@ const createSubCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create Subcategory',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const getSubCategories = async (req: Request, res: Response) => {
+const getSubCategories = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await SubCategoryServices.getSubCategories();
     res.status(200).json({
@@ -37,21 +26,10 @@ const getSubCategories = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch Subcategories',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const getASubCategory = async (req: Request, res: Response) => {
+const getASubCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.getASubCategory(id);
@@ -61,21 +39,10 @@ const getASubCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch category',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const isActiveSubCategory = async (req: Request, res: Response) => {
+const isActiveSubCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.isActiveSubCategory(id);
@@ -85,21 +52,10 @@ const isActiveSubCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update SubCategory status',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the SubCategory.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const updateASubCategory = async (req: Request, res: Response) => {
+const updateASubCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -113,21 +69,10 @@ const updateASubCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update SubCategory',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the SubCategory.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const deleteASubCategory = async (req: Request, res: Response) => {
+const deleteASubCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.deleteASubCategory(id);
@@ -137,18 +82,7 @@ const deleteASubCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete SubCategory',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the SubCategory.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
 

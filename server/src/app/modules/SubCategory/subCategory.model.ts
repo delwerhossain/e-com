@@ -29,6 +29,7 @@ const subCategorySchema = new Schema<ISubCategory>(
         },
         categoryId: {
             type: Schema.Types.ObjectId,
+            ref: 'Category',
             required: [true, 'Category ID is required'],
             validate: {
                 validator: (value: any) => Types.ObjectId.isValid(value),
