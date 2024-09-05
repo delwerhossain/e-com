@@ -28,7 +28,7 @@ const getCategories = async (req: Request, res: Response, next: NextFunction) =>
     next(error)
   }
 };
-const getACategory = async (req: Request, res: Response) => {
+const getACategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.getACategory(id);
@@ -38,21 +38,10 @@ const getACategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch category',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const isActiveCategory = async (req: Request, res: Response) => {
+const isActiveCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.isActiveCategory(id);
@@ -62,21 +51,10 @@ const isActiveCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update category status',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const updateACategory = async (req: Request, res: Response) => {
+const updateACategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -87,21 +65,10 @@ const updateACategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update category',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
-const deleteCategory = async (req: Request, res: Response) => {
+const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.deleteCategory(id);
@@ -111,18 +78,7 @@ const deleteCategory = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete category',
-      errorDetails: {
-        errorType: error.name || 'UnknownError',
-        message:
-          error.issues[0].message ||
-          'An unexpected error occurred while creating the category.',
-        errorPath: error.issues[0].path[0] || 'Unknown path',
-        error: error,
-      },
-    });
+    next(error)
   }
 };
 
