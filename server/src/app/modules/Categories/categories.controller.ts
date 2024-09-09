@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { categoryValidation } from './categories.validation';
 import { CategoryServices } from './categories.services';
 
-const createCategory = async (req: Request, res: Response, next: NextFunction) => {
+const createCategory: RequestHandler = async (req, res, next) => {
   try {
     const category = req.body;
     const validatedCategory = categoryValidation.parse(category);
@@ -13,10 +13,10 @@ const createCategory = async (req: Request, res: Response, next: NextFunction) =
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const getCategories = async (req: Request, res: Response, next: NextFunction) => {
+const getCategories: RequestHandler = async (req, res, next) => {
   try {
     const result = await CategoryServices.getCategories();
     res.status(200).json({
@@ -25,10 +25,10 @@ const getCategories = async (req: Request, res: Response, next: NextFunction) =>
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const getACategory = async (req: Request, res: Response, next: NextFunction) => {
+const getACategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.getACategory(id);
@@ -38,10 +38,10 @@ const getACategory = async (req: Request, res: Response, next: NextFunction) => 
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const isActiveCategory = async (req: Request, res: Response, next: NextFunction) => {
+const isActiveCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.isActiveCategory(id);
@@ -51,10 +51,10 @@ const isActiveCategory = async (req: Request, res: Response, next: NextFunction)
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const updateACategory = async (req: Request, res: Response, next: NextFunction) => {
+const updateACategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -65,10 +65,10 @@ const updateACategory = async (req: Request, res: Response, next: NextFunction) 
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
+const deleteCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.deleteCategory(id);
@@ -78,7 +78,7 @@ const deleteCategory = async (req: Request, res: Response, next: NextFunction) =
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
 
