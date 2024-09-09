@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import subCategoryValidation from './subCategory.validation';
 import { SubCategoryServices } from './subCategory.services';
 
-const createSubCategory = async (req: Request, res: Response, next: NextFunction) => {
+const createSubCategory: RequestHandler = async (req, res, next) => {
   try {
     const subCategory = req.body;
     const validatedSubCategory = subCategoryValidation.parse(subCategory);
@@ -14,10 +14,10 @@ const createSubCategory = async (req: Request, res: Response, next: NextFunction
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const getSubCategories = async (req: Request, res: Response, next: NextFunction) => {
+const getSubCategories: RequestHandler = async (req, res, next) => {
   try {
     const result = await SubCategoryServices.getSubCategories();
     res.status(200).json({
@@ -26,10 +26,10 @@ const getSubCategories = async (req: Request, res: Response, next: NextFunction)
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const getASubCategory = async (req: Request, res: Response, next: NextFunction) => {
+const getASubCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.getASubCategory(id);
@@ -39,10 +39,10 @@ const getASubCategory = async (req: Request, res: Response, next: NextFunction) 
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const isActiveSubCategory = async (req: Request, res: Response, next: NextFunction) => {
+const isActiveSubCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.isActiveSubCategory(id);
@@ -52,10 +52,10 @@ const isActiveSubCategory = async (req: Request, res: Response, next: NextFuncti
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const updateASubCategory = async (req: Request, res: Response, next: NextFunction) => {
+const updateASubCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -69,10 +69,10 @@ const updateASubCategory = async (req: Request, res: Response, next: NextFunctio
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
-const deleteASubCategory = async (req: Request, res: Response, next: NextFunction) => {
+const deleteASubCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await SubCategoryServices.deleteASubCategory(id);
@@ -82,7 +82,7 @@ const deleteASubCategory = async (req: Request, res: Response, next: NextFunctio
       data: result,
     });
   } catch (error: any) {
-    next(error)
+    next(error);
   }
 };
 
