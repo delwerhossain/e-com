@@ -29,10 +29,10 @@ const getASubCategory = async (id: string) => {
 };
 
 // !Toggle the active status of a subcategory
-const isActiveSubCategory = async (id: string) => {
+const isActiveSubCategory = async (id: string, status: boolean) => {
   const subCategory = await SubCategoryModel.findByIdAndUpdate(
     id,
-    [{ $set: { isActive: { $not: '$isActive' } } }],
+    { $set: { isActive: status } },
     { new: true },
   );
 

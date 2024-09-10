@@ -50,7 +50,8 @@ const getACategory: RequestHandler = async (req, res, next) => {
 const isActiveCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await CategoryServices.isActiveCategory(id);
+    const { isActive } = req.body;
+    const result = await CategoryServices.isActiveCategory(id, isActive);
     res.status(200).json({
       success: true,
       message: 'Category active status updated successfully!',

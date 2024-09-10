@@ -25,10 +25,10 @@ const getACategory = async (id: string) => {
   return category;
 };
 //!isActiveCategory is a admin route.......
-const isActiveCategory = async (id: string) => {
+const isActiveCategory = async (id: string, status: boolean) => {
   const result = await CategoryModel.findByIdAndUpdate(
     id,
-    [{ $set: { isActive: { $not: '$isActive' } } }],
+    { $set: { isActive: status } },
     { new: true },
   );
 

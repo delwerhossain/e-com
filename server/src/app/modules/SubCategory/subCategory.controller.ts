@@ -5,7 +5,7 @@ import { SubCategoryServices } from './subCategory.services';
 // Controller to create a subcategory
 const createSubCategory: RequestHandler = async (req, res, next) => {
   try {
-    const subCategory = subCategoryValidation.parse(req.body); 
+    const subCategory = subCategoryValidation.parse(req.body);
     const result = await SubCategoryServices.createSubCategory(subCategory);
     res.status(201).json({
       success: true,
@@ -50,7 +50,8 @@ const getASubCategory: RequestHandler = async (req, res, next) => {
 const isActiveSubCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await SubCategoryServices.isActiveSubCategory(id);
+    const { isActive } = req.body;
+    const result = await SubCategoryServices.isActiveSubCategory(id, isActive);
     res.status(200).json({
       success: true,
       message: 'Subcategory active status updated successfully!',
