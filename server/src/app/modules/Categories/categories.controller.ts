@@ -2,45 +2,51 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { categoryValidation } from './categories.validation';
 import { CategoryServices } from './categories.services';
 
+// Controller to create a category
 const createCategory: RequestHandler = async (req, res, next) => {
   try {
-    const category = req.body;
-    const validatedCategory = categoryValidation.parse(category);
-    const result = await CategoryServices.createCategory(validatedCategory);
+    const category = categoryValidation.parse(req.body); // Validation done in one step
+    const result = await CategoryServices.createCategory(category);
     res.status(201).json({
       success: true,
       message: 'Category created successfully!',
       data: result,
     });
   } catch (error: any) {
-    next(error);
+    next(error); // Pass error to middleware for consistent error handling
   }
 };
+
+// Controller to fetch all active categories
 const getCategories: RequestHandler = async (req, res, next) => {
   try {
     const result = await CategoryServices.getCategories();
     res.status(200).json({
       success: true,
-      message: 'Categories fetch successfully!',
+      message: 'Categories fetched successfully!',
       data: result,
     });
   } catch (error: any) {
     next(error);
   }
 };
+
+// Controller to fetch a specific category by ID
 const getACategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await CategoryServices.getACategory(id);
     res.status(200).json({
       success: true,
-      message: 'Category fetch successfully!',
+      message: 'Category fetched successfully!',
       data: result,
     });
   } catch (error: any) {
     next(error);
   }
 };
+
+// Controller to toggle the active status of a category
 const isActiveCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -54,11 +60,12 @@ const isActiveCategory: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+// Controller to update category details
 const updateACategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updatedData = req.body;
-    const result = await CategoryServices.updateACategory(id, updatedData);
+    const result = await CategoryServices.updateACategory(id, req.body); // Directly use `req.body` for updates
     res.status(200).json({
       success: true,
       message: 'Category details updated successfully!',
@@ -68,6 +75,8 @@ const updateACategory: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+// Controller to delete a category by ID
 const deleteCategory: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
