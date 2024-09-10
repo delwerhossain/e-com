@@ -7,7 +7,7 @@ const ReviewSchema = new Schema<IReviews>(
     reviewerId: {
       type: Schema.Types.ObjectId,
       required: [true, 'Reviewer ID is required'],
-    //TODO->   ref: 'User',
+      //TODO->   ref: 'User',
     },
     rating: {
       type: Number,
@@ -26,6 +26,9 @@ const ReviewSchema = new Schema<IReviews>(
       required: [true, 'Product ID is required'],
       ref: 'Product',
     },
+    isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
+    isBest: { type: Boolean, default: false },
   },
   {
     timestamps: true,

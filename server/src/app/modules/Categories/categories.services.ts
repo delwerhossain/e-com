@@ -2,11 +2,13 @@ import { ICategory } from './categories.interface';
 import { CategoryModel } from './categories.model';
 
 const createCategory = async (category: ICategory) => {
-  return await CategoryModel.create(category);
+  const result = await CategoryModel.create(category);
+  return result;
 };
 
 const getCategories = async () => {
-  return await CategoryModel.find({ isActive: true });
+  const result = await CategoryModel.find({ isActive: true });
+  return result;
 };
 
 const getACategory = async (id: string) => {

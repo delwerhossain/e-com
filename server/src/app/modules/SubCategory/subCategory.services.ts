@@ -3,12 +3,14 @@ import { SubCategoryModel } from './subCategory.model';
 
 // Create a subcategory
 const createSubCategory = async (subCategory: ISubCategory) => {
-  return await SubCategoryModel.create(subCategory);
+  const result = await SubCategoryModel.create(subCategory);
+  return result;
 };
 
 // Fetch all active subcategories
 const getSubCategories = async () => {
-  return await SubCategoryModel.find({ isActive: true });
+  const result = await SubCategoryModel.find({ isActive: true });
+  return result;
 };
 
 // Fetch a subcategory by ID with active status check
@@ -23,7 +25,7 @@ const getASubCategory = async (id: string) => {
     return { Active_Status: 'The Subcategory Status is UnActive' };
   }
 
-  return subCategory; 
+  return subCategory;
 };
 
 // !Toggle the active status of a subcategory

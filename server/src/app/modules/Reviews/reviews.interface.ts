@@ -5,4 +5,7 @@ export interface IReviews {
     rating:number;
     comment:string;
     productId: Types.ObjectId;
+    isDeleted : boolean;
+    isActive : boolean;
+    isBest : boolean
 }
