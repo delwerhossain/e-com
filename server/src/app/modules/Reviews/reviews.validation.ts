@@ -27,7 +27,7 @@ const reviewsValidation = z.object({
   productId: objectIdSchema,
   isActive: z.boolean().default(false),
   isDeleted: z.boolean().default(false),
-  isBestProduct: z.boolean().default(false),
+  isBest: z.boolean().default(false),
 });
 
 export default reviewsValidation;

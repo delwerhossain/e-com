@@ -30,6 +30,19 @@ const getSubCategories: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// Controller to get all Inactive subcategories
+const getInActiveSubCategories: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await SubCategoryServices.getInActiveSubcategory();
+    res.status(200).json({
+      success: true,
+      message: 'InActive Subcategories fetched successfully!',
+      data: result,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
 
 // Controller to fetch a specific subcategory by ID
 const getASubCategory: RequestHandler = async (req, res, next) => {
@@ -99,4 +112,5 @@ export const SubCategoryControllers = {
   isActiveSubCategory,
   updateASubCategory,
   deleteASubCategory,
+  getInActiveSubCategories
 };

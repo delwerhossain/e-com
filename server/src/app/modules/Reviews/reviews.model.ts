@@ -7,7 +7,7 @@ const ReviewSchema = new Schema<IReviews>(
     reviewerId: {
       type: Schema.Types.ObjectId,
       required: [true, 'Reviewer ID is required'],
-      //TODO->   ref: 'User',
+      ref: 'User',
     },
     rating: {
       type: Number,

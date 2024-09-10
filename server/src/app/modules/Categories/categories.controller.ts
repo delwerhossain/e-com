@@ -30,6 +30,19 @@ const getCategories: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+// Controller to fetch all Inactive categories
+const getInActiveCategories: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await CategoryServices.getInActiveCategory();
+    res.status(200).json({
+      success: true,
+      message: 'InActive Categories fetched successfully!',
+      data: result,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
 
 // Controller to fetch a specific category by ID
 const getACategory: RequestHandler = async (req, res, next) => {
@@ -99,4 +112,5 @@ export const CategoryControllers = {
   isActiveCategory,
   deleteCategory,
   updateACategory,
+  getInActiveCategories
 };

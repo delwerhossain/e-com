@@ -72,6 +72,14 @@ const deleteASubCategory = async (id: string) => {
   return subCategory;
 };
 
+// Function to get all inactive subcategory for a specific product
+const getInActiveSubcategory = async () => {
+  const result = await SubCategoryModel.find({
+    isActive: false,
+  });
+  return result;
+};
+
 export const SubCategoryServices = {
   createSubCategory,
   getSubCategories,
@@ -79,4 +87,5 @@ export const SubCategoryServices = {
   isActiveSubCategory,
   deleteASubCategory,
   updateASubCategory,
+  getInActiveSubcategory,
 };
