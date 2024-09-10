@@ -9,12 +9,6 @@ const objectIdSchema = z
     })
     .transform((val) => new mongoose.Types.ObjectId(val));
 
-// Zod schema for TReviews
-const zReviews = z.object({
-    reviewer: z.string().optional(),
-    rating: z.number().min(0).max(5).optional(),
-    comment: z.string().optional(),
-});
 
 // Zod schema for IProduct
 export const productValidation = z.object({
@@ -32,7 +26,6 @@ export const productValidation = z.object({
     ratings: z.object({
         averageRating: z.number().min(0).max(5).optional(),
         reviewsCount: z.number().min(0).optional(),
-        reviews: z.array(zReviews).optional(),
     }).optional(),
 
 });
