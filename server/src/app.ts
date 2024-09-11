@@ -14,7 +14,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 //global Error handler
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
 //Not Found
 app.use(notFound);
