@@ -73,7 +73,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 //! this route only for admin
-const GetAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       page = '1',
@@ -296,9 +296,9 @@ const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const UserController = {
+  getAllUsers,
   createUser,
   getAUser,
-  GetAllUsers,
   updateAUser,
   deleteAUser,
 };
