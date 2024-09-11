@@ -12,20 +12,18 @@ const getSubCategories = async () => {
 };
 
 const getASubCategory = async (id: string) => {
-  const searchIsActive = await SubCategoryModel.findById(id)
+  const searchIsActive = await SubCategoryModel.findById(id);
   if (!searchIsActive) {
     const result = {
-      Not_found: "Subcategory not found"
-    }
-    return result
-
+      Not_found: 'Subcategory not found',
+    };
+    return result;
   }
   if (!searchIsActive?.isActive) {
     const result = {
-      Active_Status: "The Subcategory Status is UnActive"
-    }
-    return result
-
+      Active_Status: 'The Subcategory Status is UnActive',
+    };
+    return result;
   }
   const result = await SubCategoryModel.findById(id);
   return result;
@@ -35,10 +33,9 @@ const isActiveSubCategory = async (id: string) => {
   const searchSubCategory = await SubCategoryModel.findById(id);
   if (!searchSubCategory) {
     const result = {
-      Not_found: "Subcategory not found"
-    }
-    return result
-
+      Not_found: 'Subcategory not found',
+    };
+    return result;
   }
   const updatedStatus = !searchSubCategory.isActive;
   const result = await SubCategoryModel.findByIdAndUpdate(
@@ -57,9 +54,9 @@ const updateASubCategory = async (
   const searchSubCategory = await SubCategoryModel.findById(id);
   if (!searchSubCategory) {
     const result = {
-      Not_found: "Subcategory not found"
-    }
-    return result
+      Not_found: 'Subcategory not found',
+    };
+    return result;
   }
   const result = await SubCategoryModel.findByIdAndUpdate(
     id,
@@ -73,9 +70,9 @@ const deleteASubCategory = async (id: string) => {
   const searchSubCategory = await SubCategoryModel.findById(id);
   if (!searchSubCategory) {
     const result = {
-      Not_found: "Subcategory not found"
-    }
-    return result
+      Not_found: 'Subcategory not found',
+    };
+    return result;
   }
   const result = await SubCategoryModel.findByIdAndDelete(id);
   return result;

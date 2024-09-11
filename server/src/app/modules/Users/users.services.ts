@@ -1,10 +1,6 @@
 import { IUser } from './users.interface';
 import { UserModel } from './users.model';
 
-interface UserQuery {
-  id?: string;
-  email?: string;
-}
 
 const createUserInToDB = async (data: any) => {
   try {
