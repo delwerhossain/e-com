@@ -11,4 +11,3 @@ router.put('/status/:id', SubCategoryControllers.isActiveSubCategory);
 router.put('/:id', SubCategoryControllers.updateASubCategory);
 
 export const subcategoryRoutes = router;
-

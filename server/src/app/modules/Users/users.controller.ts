@@ -40,36 +40,6 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error: any) {
     next(error);
-    // // Handle MongoDB duplicate key error
-    // if (error instanceof MongoServerError && error.code === 11000) {
-    //   const duplicateField = Object.keys(error.keyValue)[0]; // Get the field that caused the duplication
-    //   return res.status(409).json({
-    //     success: false,
-    //     message: `The ${duplicateField} "${error.keyValue[duplicateField]}" is already in use.`,
-    //   });
-    // }
-
-    // if (error.name === 'ZodError') {
-    //   // Handle validation errors
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'Validation error',
-    //     errors: error.errors,
-    //   });
-    // }
-
-    // // Handle any other errors
-    // console.error('Error in createUser:', error);
-    // return res.status(500).json({
-    //   success: false,
-    //   message: 'Failed to create User',
-    //   errorDetails: {
-    //     errorType: error.name || 'UnknownError',
-    //     message:
-    //       error.message ||
-    //       'An unexpected error occurred while creating the User.',
-    //   },
-    // });
   }
 };
 //! this route only for admin
@@ -157,39 +127,6 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error: any) {
     next(error);
-    //   // Handle MongoDB-specific errors
-    //   if (error instanceof MongoServerError) {
-    //     return res.status(500).json({
-    //       success: false,
-    //       message: 'Database error occurred while fetching the user',
-    //       errorDetails: {
-    //         errorType: error.name || 'MongoServerError',
-    //         message: error.message || 'Unexpected database error.',
-    //       },
-    //     });
-    //   }
-
-    //   if (error.name === 'ZodError') {
-    //     // Handle validation errors
-    //     return res.status(400).json({
-    //       success: false,
-    //       message: 'Validation error',
-    //       errors: error.errors,
-    //     });
-    //   }
-
-    //   // Handle any other errors
-    //   console.error('Error in getAUser:', error);
-    //   return res.status(500).json({
-    //     success: false,
-    //     message: 'Failed to retrieve the user',
-    //     errorDetails: {
-    //       errorType: error.name || 'UnknownError',
-    //       message:
-    //         error.message ||
-    //         'An unexpected error occurred while retrieving the user.',
-    //     },
-    //   });
   }
 };
 const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -237,39 +174,6 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (error: any) {
     next(error);
-    // // Handle MongoDB-specific errors
-    // if (error instanceof MongoServerError) {
-    //   return res.status(500).json({
-    //     success: false,
-    //     message: 'Database error occurred while updating the user.',
-    //     errorDetails: {
-    //       errorType: error.name || 'MongoServerError',
-    //       message: error.message || 'Unexpected database error.',
-    //     },
-    //   });
-    // }
-
-    // // Handle validation errors from Zod
-    // if (error.name === 'ZodError') {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'Validation error.',
-    //     errors: error.errors,
-    //   });
-    // }
-
-    // // Handle any other errors
-    // console.error('Error in updateAUser:', error);
-    // return res.status(500).json({
-    //   success: false,
-    //   message: 'Failed to update the user.',
-    //   errorDetails: {
-    //     errorType: error.name || 'UnknownError',
-    //     message:
-    //       error.message ||
-    //       'An unexpected error occurred while updating the user.',
-    //   },
-    // });
   }
 };
 
