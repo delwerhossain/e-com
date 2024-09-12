@@ -12,66 +12,50 @@ const getCategories = async () => {
 };
 
 const getACategory = async (id: string) => {
-  const searchIsActive = await CategoryModel.findById(id);
-  if (!searchIsActive) {
-    const result = {
-      Not_found: 'category not found',
-    };
-    return result;
-  }
-  if (!searchIsActive?.isActive) {
-    const result = {
-      Active_Status: 'The Category Status is UnActive',
-    };
-    return result;
-  }
-  const result = await CategoryModel.findById(id);
-  return result;
-};
+  const category = await CategoryModel.findById(id);
 
-const isActiveCategory = async (id: string) => {
-  const searchCategory = await CategoryModel.findById(id);
-  if (!searchCategory) {
-    const result = {
-      Not_found: 'category not found',
-    };
-    return result;
+  if (!category) {
+    return { Not_found: 'Category not found' };
   }
-  const updatedStatus = !searchCategory.isActive;
+
+  if (!category.isActive) {
+    return { Active_Status: 'The Category Status is Inactive' };
+  }
+
+  return category;
+};
+//!isActiveCategory is a admin route.......
+const isActiveCategory = async (id: string, status: boolean) => {
   const result = await CategoryModel.findByIdAndUpdate(
     id,
-    { $set: { isActive: updatedStatus } },
+    { $set: { isActive: status } },
     { new: true },
   );
 
-  return result;
+  return result || { Not_found: 'Category not found' };
 };
-
+//!updateACategory is a admin route.......
 const updateACategory = async (id: string, updatedData: Partial<ICategory>) => {
-  const searchCategory = await CategoryModel.findById(id);
-  if (!searchCategory) {
-    const result = {
-      Not_found: 'category not found',
-    };
-    return result;
-  }
   const result = await CategoryModel.findByIdAndUpdate(
     id,
     { $set: updatedData },
     { new: true },
   );
-  return result;
+
+  return result || { Not_found: 'Category not found' };
+};
+//!deleteCategory is a admin route.......
+const deleteCategory = async (id: string) => {
+  const result = await CategoryModel.findByIdAndDelete(id);
+
+  return result || { Not_found: 'Category not found' };
 };
 
-const deleteCategory = async (id: string) => {
-  const searchCategory = await CategoryModel.findById(id);
-  if (!searchCategory) {
-    const result = {
-      Not_found: 'category not found',
-    };
-    return result;
-  }
-  const result = await CategoryModel.findByIdAndDelete(id);
+// Function to get all inactive subcategory for a specific product
+const getInActiveCategory = async () => {
+  const result = await CategoryModel.find({
+    isActive: false,
+  });
   return result;
 };
 
@@ -80,6 +64,7 @@ export const CategoryServices = {
   getCategories,
   getACategory,
   isActiveCategory,
-  deleteCategory,
   updateACategory,
+  deleteCategory,
+  getInActiveCategory,
 };

@@ -1,11 +1,5 @@
 import { Schema, model, Types } from 'mongoose';
-import { IProduct, TReviews } from './product.interface';
-
-const reviewsSchema = new Schema<TReviews>({
-  reviewer: { type: String, required: false, trim: true },
-  rating: { type: Number, required: false, min: 0, max: 5 },
-  comment: { type: String, required: false, trim: true },
-});
+import { IProduct } from './product.interface';
 
 const productSchema = new Schema<IProduct>(
   {
@@ -32,7 +26,6 @@ const productSchema = new Schema<IProduct>(
     ratings: {
       averageRating: { type: Number, default: 0, min: 0, max: 5 },
       reviewsCount: { type: Number, default: 0 },
-      reviews: [reviewsSchema],
     },
   },
   { timestamps: true },

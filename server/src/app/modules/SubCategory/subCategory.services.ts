@@ -1,80 +1,82 @@
 import { ISubCategory } from './subCategory.interface';
 import { SubCategoryModel } from './subCategory.model';
 
+// Create a subcategory
 const createSubCategory = async (subCategory: ISubCategory) => {
   const result = await SubCategoryModel.create(subCategory);
   return result;
 };
 
+// Fetch all active subcategories
 const getSubCategories = async () => {
   const result = await SubCategoryModel.find({ isActive: true });
   return result;
 };
 
+// Fetch a subcategory by ID with active status check
 const getASubCategory = async (id: string) => {
-  const searchIsActive = await SubCategoryModel.findById(id);
-  if (!searchIsActive) {
-    const result = {
-      Not_found: 'Subcategory not found',
-    };
-    return result;
+  const subCategory = await SubCategoryModel.findById(id);
+
+  if (!subCategory) {
+    return { Not_found: 'Subcategory not found' };
   }
-  if (!searchIsActive?.isActive) {
-    const result = {
-      Active_Status: 'The Subcategory Status is UnActive',
-    };
-    return result;
+
+  if (!subCategory.isActive) {
+    return { Active_Status: 'The Subcategory Status is UnActive' };
   }
-  const result = await SubCategoryModel.findById(id);
-  return result;
+
+  return subCategory;
 };
 
-const isActiveSubCategory = async (id: string) => {
-  const searchSubCategory = await SubCategoryModel.findById(id);
-  if (!searchSubCategory) {
-    const result = {
-      Not_found: 'Subcategory not found',
-    };
-    return result;
-  }
-  const updatedStatus = !searchSubCategory.isActive;
-  const result = await SubCategoryModel.findByIdAndUpdate(
+// !Toggle the active status of a subcategory
+const isActiveSubCategory = async (id: string, status: boolean) => {
+  const subCategory = await SubCategoryModel.findByIdAndUpdate(
     id,
-    { $set: { isActive: updatedStatus } },
+    { $set: { isActive: status } },
     { new: true },
   );
 
-  return result;
+  if (!subCategory) {
+    return { Not_found: 'Subcategory not found' };
+  }
+
+  return subCategory;
 };
 
+//! Update subcategory details
 const updateASubCategory = async (
   id: string,
   updatedData: Partial<ISubCategory>,
 ) => {
-  const searchSubCategory = await SubCategoryModel.findById(id);
-  if (!searchSubCategory) {
-    const result = {
-      Not_found: 'Subcategory not found',
-    };
-    return result;
-  }
-  const result = await SubCategoryModel.findByIdAndUpdate(
+  const subCategory = await SubCategoryModel.findByIdAndUpdate(
     id,
     { $set: updatedData },
     { new: true },
   );
-  return result;
+
+  if (!subCategory) {
+    return { Not_found: 'Subcategory not found' };
+  }
+
+  return subCategory;
 };
 
+// !Delete a subcategory
 const deleteASubCategory = async (id: string) => {
-  const searchSubCategory = await SubCategoryModel.findById(id);
-  if (!searchSubCategory) {
-    const result = {
-      Not_found: 'Subcategory not found',
-    };
-    return result;
+  const subCategory = await SubCategoryModel.findByIdAndDelete(id);
+
+  if (!subCategory) {
+    return { Not_found: 'Subcategory not found' };
   }
-  const result = await SubCategoryModel.findByIdAndDelete(id);
+
+  return subCategory;
+};
+
+// Function to get all inactive subcategory for a specific product
+const getInActiveSubcategory = async () => {
+  const result = await SubCategoryModel.find({
+    isActive: false,
+  });
   return result;
 };
 
@@ -85,4 +87,5 @@ export const SubCategoryServices = {
   isActiveSubCategory,
   deleteASubCategory,
   updateASubCategory,
+  getInActiveSubcategory,
 };
