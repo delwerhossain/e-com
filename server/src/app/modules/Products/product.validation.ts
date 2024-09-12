@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 
 // Zod schema for MongoDB ObjectId using refine
 const objectIdSchema = z
-    .string()
-    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
-        message: 'Invalid ObjectId format',
-    })
-    .transform((val) => new mongoose.Types.ObjectId(val));
+  .string()
+  .refine(val => mongoose.Types.ObjectId.isValid(val), {
+    message: 'Invalid ObjectId format',
+  })
+  .transform(val => new mongoose.Types.ObjectId(val));
 
 
 // Zod schema for IProduct

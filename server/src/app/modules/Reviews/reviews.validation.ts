@@ -19,11 +19,10 @@ const reviewsValidation = z.object({
     .min(1, { message: 'Rating must be at least 1' })
     .max(5, { message: 'Rating cannot exceed 5' }),
   comment: z
-    .string({
-      required_error: 'Comment is required',
-    })
+    .string()
     .min(10, { message: 'Comment must be at least 10 characters long' })
-    .max(1000, { message: 'Comment cannot exceed 1000 characters' }),
+    .max(1000, { message: 'Comment cannot exceed 1000 characters' })
+    .optional(),
   productId: objectIdSchema,
   isActive: z.boolean().default(false),
   isDeleted: z.boolean().default(false),

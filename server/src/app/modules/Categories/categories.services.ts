@@ -59,7 +59,6 @@ const getInActiveCategory = async () => {
   return result;
 };
 
-
 export const CategoryServices = {
   createCategory,
   getCategories,
@@ -67,5 +66,5 @@ export const CategoryServices = {
   isActiveCategory,
   updateACategory,
   deleteCategory,
-  getInActiveCategory
+  getInActiveCategory,
 };

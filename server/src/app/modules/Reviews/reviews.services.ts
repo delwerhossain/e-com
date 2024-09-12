@@ -15,6 +15,16 @@ const getProductReviews = async (productId: string) => {
     isActive: true,
     productId: productId,
   });
+  if (!result) {
+    return { Not_found: 'Review not found' };
+  }
+  return result;
+};
+// Function to fetch best reviews
+const bestReviews = async () => {
+  const result = await ReviewsModel.find({
+    isBest: true,
+  });
   return result;
 };
 
@@ -22,6 +32,9 @@ const getProductReviews = async (productId: string) => {
 const getAReview = async (id: string) => {
   // Find a review by its unique ID
   const result = await ReviewsModel.findById(id);
+  if (!result) {
+    return { Not_found: 'Review not found' };
+  }
   return result;
 };
 
@@ -32,6 +45,9 @@ const getInActiveReviews = async (productId: string) => {
     isActive: false,
     productId: productId,
   });
+  if (!result) {
+    return { Not_found: 'Review not found' };
+  }
   return result;
 };
 
@@ -90,12 +106,13 @@ const deleteReview = async (id: string) => {
 };
 
 export const ReviewServices = {
-  createReview,
-  getProductReviews,
-  getAReview,
-  getInActiveReviews,
-  getALLReviews,
-  isActiveReview,
-  updateReview,
-  deleteReview,
+  createReview, //crate a review
+  getProductReviews, //get a specific products  all review
+  getAReview, // get a single review with its object id
+  getInActiveReviews, //front end prospective : admin can see all Bad inactive reviews of a product and if want he can active them..
+  getALLReviews, //front end prospective : admin can see all active reviews to show them on what our client say about us section admin can make the review as isBest review / or change the active status form here also
+  isActiveReview, //front end prospective : admin can change a reviews active status with help of this
+  updateReview, //a user can update his review by this
+  deleteReview, //a user or a vendor or a admin can delete a review with this
+  bestReviews, // for get all best reviews.....admin can user the updateReview func for update the isBest field of a review.
 };
