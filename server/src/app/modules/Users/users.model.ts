@@ -8,7 +8,6 @@ import {
   IUserProfile,
   IVendorProfile,
 } from './users.interface';
-import { NextFunction } from 'express';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -19,9 +18,14 @@ export const AddressSchema = new Schema<IAddress>({
   country: { type: String, trim: true },
 });
 
+//! todo need to fix auto date take
 // LastLogin Schema
-export const LastLoginSchema = new Schema<ILoginDetails>({
-  timestamp: { type: Date },
+const LastLoginSchema = new Schema<ILoginDetails>({
+  timestamp: {
+    type: Date,
+    default: Date.now, // Automatically set to current date and time when created
+    select: false, // Prevent it from being returned in queries
+  },
   ip: { type: String },
 });
 
@@ -85,7 +89,7 @@ const UserSchema = new Schema<IUser>(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true,
+      unique: true, // Ensure email is unique
       trim: true,
     },
     emailVerified: {
@@ -116,14 +120,14 @@ const UserSchema = new Schema<IUser>(
       validate: {
         validator: function (v: any) {
           if (this.role === 'vendor') {
-            // Create an instance of VendorProfileModel and validate
+            // Validate Vendor Profile
             const vendorProfile = new VendorProfileModel(v);
             return vendorProfile
               .validate()
               .then(() => true)
               .catch(() => false);
           }
-          // Create an instance of UserProfileModel and validate
+          // Validate User Profile
           const userProfile = new UserProfileModel(v);
           return userProfile
             .validate()
@@ -178,6 +182,19 @@ UserSchema.pre<Query<any, any>>('updateMany', function (next) {
     this.where({ isDelete: { $ne: true } });
   }
   next();
+});
+
+// Apply transformation for `dateOfBirth` when converting to JSON
+UserSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    // Format the dateOfBirth field as "YYYY-MM-DD"
+    if (ret.profile && ret.profile.dateOfBirth) {
+      ret.profile.dateOfBirth = ret.profile.dateOfBirth
+        .toISOString()
+        .split('T')[0];
+    }
+    return ret;
+  },
 });
 
 //! for pass if need
