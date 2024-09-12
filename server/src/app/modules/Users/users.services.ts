@@ -7,10 +7,15 @@ const createUserInToDB = async (data: any) => {
     // Create the user in the database
     const result = await UserModel.create(data);
     return result;
-  } catch (error) {
+  } catch (error: any) {
+    // Handle duplicate email error
+    if (error.code === 11000 && error.keyValue?.email) {
+      throw new Error('Email already exists');
+    }
     throw error;
   }
 };
+
 
 const getAUserInToDB = async (id: string, email: string) => {
   const searchCriteria: any = {};
@@ -21,6 +26,7 @@ const getAUserInToDB = async (id: string, email: string) => {
   } else if (email) {
     searchCriteria.email = email;
   }
+// if user isDeleted is true then it will not be displayed
 
   // Find the user by either ID or email, excluding the password hash and other sensitive fields
   const result = await UserModel.findOne(searchCriteria).select(
@@ -34,7 +40,6 @@ const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
     const sensitiveFields = [
       'role',
       'isActive',
-      'lastLogin',
       'isDelete',
       'createdAt',
       'updatedAt',
@@ -45,11 +50,12 @@ const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
     );
 
     // Find and update the user //! For updateOne we can user email if we use  findByOneAndUpdate
-    const updatedUser = await UserModel.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-      select: '-passwordHash -role -isDelete -createdAt -updatedAt', // Exclude sensitive fields
-    });
+  // Perform the update
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true, runValidators: true, select: '-passwordHash -role -isDelete -createdAt -updatedAt' } // Exclude sensitive fields
+  );
 
     // Return null if the user is not found
     if (!updatedUser) {

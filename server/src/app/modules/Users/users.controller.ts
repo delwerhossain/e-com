@@ -9,7 +9,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, passwordHash } = req.body;
 
-    // Parse salt rounds with a fallback to a default value if parsing fails
+    //! todo => salt rounds value 
+    // Parse salt rounds with a fallback to default value if parsing fails
     const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
 
     // Hash the password with correct salt rounds
@@ -32,16 +33,23 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // Return the created user, excluding sensitive information like password
     res.status(201).json({
       success: true,
-      statusCode: 200,
+      statusCode: 201,
       user: {
         email: result.email,
         emailVerified: result.emailVerified,
       },
     });
   } catch (error: any) {
+    if (error.message === 'Email already exists') {
+      return res.status(400).json({
+        success: false,
+        message: 'This email is already registered. Please use another email.',
+      });
+    }
     next(error);
   }
 };
+
 //! this route only for admin
 const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -103,6 +111,7 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     if (!id && !email) {
       return res.status(400).json({
         success: false,
+        statusCode: 400,
         message:
           'Please provide either an ID or an email to search for a user.',
       });
@@ -115,6 +124,7 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     if (!result) {
       return res.status(404).json({
         success: false,
+        statusCode: 404,
         message: 'User not found',
       });
     }
@@ -123,6 +133,7 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({
       success: true,
       statusCode: 200,
+      message: 'User retrieved successfully',
       user: result, // Returning the user data with sensitive information excluded
     });
   } catch (error: any) {
@@ -132,12 +143,17 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
 const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userID = req.params.id;
-    const { passwordHash, ...updateData } = req.body;
+    const userRowData = req.body;
+    const { passwordHash, ...updateData } = userRowData;
+
+    // Convert dateOfBirth to Date object if present
+    if (updateData.profile?.dateOfBirth) {
+      updateData.profile.dateOfBirth = new Date(updateData.profile.dateOfBirth);
+    }
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds =
-        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+      const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
       updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
     }
 
@@ -145,7 +161,8 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     if (!Object.keys(updateData).length) {
       return res.status(400).json({
         success: false,
-        message: 'No update data provided.',
+        statusCode: 400,
+        message: 'No update data provided',
       });
     }
 
@@ -153,16 +170,14 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     const validatedData = UserValidation.userUpdateValidation.parse(updateData);
 
     // Update the user in the database
-    const updatedUser = await UserService.updateAUserInToDB(
-      userID,
-      validatedData,
-    );
+    const updatedUser = await UserService.updateAUserInToDB(userID, validatedData);
 
     // If the user is not found, return a 404 response
     if (!updatedUser) {
       return res.status(404).json({
         success: false,
-        message: 'User not found.',
+        statusCode: 404,
+        message: 'User not found',
       });
     }
 
@@ -170,12 +185,14 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
       success: true,
       statusCode: 200,
-      user: updatedUser,
+      message: 'User updated successfully!',
+      data: updatedUser,
     });
   } catch (error: any) {
     next(error);
   }
 };
+
 
 //! this route only for admin
 const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -185,6 +202,7 @@ const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
     if (!deletedUser) {
       return res.status(404).json({
         success: false,
+        statusCode: 404,
         message: 'User not found.',
       });
     }

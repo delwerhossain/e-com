@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { Query } from 'mongoose';
 import {
   IAddress,
   ICommunicationPreferences,
@@ -17,9 +18,14 @@ export const AddressSchema = new Schema<IAddress>({
   country: { type: String, trim: true },
 });
 
+//! todo need to fix auto date take
 // LastLogin Schema
-export const LastLoginSchema = new Schema<ILoginDetails>({
-  timestamp: { type: Date },
+const LastLoginSchema = new Schema<ILoginDetails>({
+  timestamp: {
+    type: Date,
+    default: Date.now, // Automatically set to current date and time when created
+    select: false, // Prevent it from being returned in queries
+  },
   ip: { type: String },
 });
 
@@ -83,7 +89,7 @@ const UserSchema = new Schema<IUser>(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true,
+      unique: true, // Ensure email is unique
       trim: true,
     },
     emailVerified: {
@@ -114,14 +120,14 @@ const UserSchema = new Schema<IUser>(
       validate: {
         validator: function (v: any) {
           if (this.role === 'vendor') {
-            // Create an instance of VendorProfileModel and validate
+            // Validate Vendor Profile
             const vendorProfile = new VendorProfileModel(v);
             return vendorProfile
               .validate()
               .then(() => true)
               .catch(() => false);
           }
-          // Create an instance of UserProfileModel and validate
+          // Validate User Profile
           const userProfile = new UserProfileModel(v);
           return userProfile
             .validate()
@@ -136,7 +142,63 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-// UserSchema.pre('save', function (next) {
+//! if user isDeleted is true then it will not be displayed , if admin request then it will be displayed
+
+// Pre-hook for 'find'
+UserSchema.pre<Query<any, any>>('find', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOne'
+UserSchema.pre<Query<any, any>>('findOne', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOneAndUpdate'
+UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateOne' (instead of 'update')
+UserSchema.pre<Query<any, any>>('updateOne', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateMany'
+UserSchema.pre<Query<any, any>>('updateMany', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Apply transformation for `dateOfBirth` when converting to JSON
+UserSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    // Format the dateOfBirth field as "YYYY-MM-DD"
+    if (ret.profile && ret.profile.dateOfBirth) {
+      ret.profile.dateOfBirth = ret.profile.dateOfBirth
+        .toISOString()
+        .split('T')[0];
+    }
+    return ret;
+  },
+});
+
+//! for pass if need
+// UserSchema.pre('save', function (next:NextFunction) {
 //   this.set('passwordHash', undefined, { strict: false });
 //   next();
 // });
