@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { Query } from 'mongoose';
 import {
   IAddress,
   ICommunicationPreferences,
@@ -7,6 +8,7 @@ import {
   IUserProfile,
   IVendorProfile,
 } from './users.interface';
+import { NextFunction } from 'express';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -136,7 +138,50 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-// UserSchema.pre('save', function (next) {
+//! if user isDeleted is true then it will not be displayed , if admin request then it will be displayed
+
+// Pre-hook for 'find'
+UserSchema.pre<Query<any, any>>('find', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOne'
+UserSchema.pre<Query<any, any>>('findOne', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOneAndUpdate'
+UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateOne' (instead of 'update')
+UserSchema.pre<Query<any, any>>('updateOne', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateMany'
+UserSchema.pre<Query<any, any>>('updateMany', function (next) {
+  if (!this.getOptions()?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+//! for pass if need
+// UserSchema.pre('save', function (next:NextFunction) {
 //   this.set('passwordHash', undefined, { strict: false });
 //   next();
 // });
