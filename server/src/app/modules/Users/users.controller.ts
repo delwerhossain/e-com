@@ -51,50 +51,95 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 //! this route only for admin
+// Admin-only route for getting all users with advanced search
 const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       page = '1',
       limit = '10',
-      sortBy,
-      sortOrder, // 'asc' or 'desc'
-      userType, // 'vendor' or 'user'
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      role,
       name,
       email,
       number,
       address,
+      isActive,
+      emailVerified,
+      gender,
+      dateOfBirthFrom,
+      dateOfBirthTo,
+      createdFrom,
+      createdTo,
+      lastLoginFrom,
+      lastLoginTo,
+      showDeleted = false,
     } = req.query;
 
-    const pageNumber = Array.isArray(page)
-      ? parseInt(page[0] as string, 10)
-      : parseInt(page as string, 10);
+    const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
 
     const filter: any = {};
-    if (userType) filter.userType = userType;
-    if (name) filter.name = new RegExp(name as string, 'i'); // case-insensitive regex search
+    if (role) filter.role = role;
+    if (name) filter['profile.name'] = new RegExp(name as string, 'i');
     if (email) filter.email = new RegExp(email as string, 'i');
-    if (number) filter.number = new RegExp(number as string, 'i');
-    if (address) filter.address = new RegExp(address as string, 'i');
+    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    if (address) filter['profile.shippingAddress.city'] = new RegExp(address as string, 'i');
+    if (isActive !== undefined) filter.isActive = isActive === 'true';
+    if (emailVerified !== undefined) filter.emailVerified = emailVerified === 'true';
+    if (gender) filter['profile.gender'] = gender;
+
+    // Date filters
+    if (dateOfBirthFrom || dateOfBirthTo) {
+      filter['profile.dateOfBirth'] = {
+        ...(dateOfBirthFrom && { $gte: new Date(dateOfBirthFrom as string) }),
+        ...(dateOfBirthTo && { $lte: new Date(dateOfBirthTo as string) }),
+      };
+    }
+    if (createdFrom || createdTo) {
+      filter.createdAt = {
+        ...(createdFrom && { $gte: new Date(createdFrom as string) }),
+        ...(createdTo && { $lte: new Date(createdTo as string) }),
+      };
+    }
+    if (lastLoginFrom || lastLoginTo) {
+      filter['lastLogin.timestamp'] = {
+        ...(lastLoginFrom && { $gte: new Date(lastLoginFrom as string) }),
+        ...(lastLoginTo && { $lte: new Date(lastLoginTo as string) }),
+      };
+    }
+
+    //! todo => check if user is admin , need to use jwt token
+    const isAdmin = req.user?.isAdmin || false;
+    if (!isAdmin || showDeleted === 'false') {
+      filter.isDelete = { $ne: true };
+    }
 
     const sort: any = {};
-    if (sortBy) sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
+    sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
 
+    // Use the optimized DB function
     const result = await UserService.getAllUsersInToDB(
       filter,
       sort,
       pageNumber,
       limitNumber,
+      { isAdmin }
     );
+
+    const totalPages = Math.ceil(result.total / limitNumber);
 
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: 'Users retrieved successfully',
       meta: {
-        page: pageNumber,
+        currentPage: pageNumber,
         limit: limitNumber,
-        total: result.total,
+        totalRecords: result.total,
+        totalPages,
+        hasPrevPage: pageNumber > 1,
+        hasNextPage: pageNumber < totalPages,
       },
       data: result.data,
     });
@@ -102,6 +147,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     next(err);
   }
 };
+
 
 const getAUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -149,6 +195,10 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     // Convert dateOfBirth to Date object if present
     if (updateData.profile?.dateOfBirth) {
       updateData.profile.dateOfBirth = new Date(updateData.profile.dateOfBirth);
+    }
+    // last login timestamp is not allowed to update
+    if (updateData.lastLogin) {
+      delete updateData.lastLogin.timestamp
     }
 
     // Handle password update if provided

@@ -24,7 +24,7 @@ const LastLoginSchema = new Schema<ILoginDetails>({
   timestamp: {
     type: Date,
     default: Date.now, // Automatically set to current date and time when created
-    select: false, // Prevent it from being returned in queries
+    //select: false, // Prevent it from being returned in queries
   },
   ip: { type: String },
 });
@@ -104,7 +104,7 @@ const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ['user', 'vendor'],
-      default: 'user',
+      default: 'vendor',
     },
     isDelete: {
       type: Boolean,
@@ -143,10 +143,13 @@ const UserSchema = new Schema<IUser>(
 );
 
 //! if user isDeleted is true then it will not be displayed , if admin request then it will be displayed
-
 // Pre-hook for 'find'
 UserSchema.pre<Query<any, any>>('find', function (next) {
-  if (!this.getOptions()?.isAdmin) {
+  const queryOptions = this.getOptions();
+  
+  // Check if the requester is not an admin
+  if (!queryOptions?.isAdmin) {
+    // Exclude users with isDelete: true for non-admins
     this.where({ isDelete: { $ne: true } });
   }
   next();
@@ -154,7 +157,9 @@ UserSchema.pre<Query<any, any>>('find', function (next) {
 
 // Pre-hook for 'findOne'
 UserSchema.pre<Query<any, any>>('findOne', function (next) {
-  if (!this.getOptions()?.isAdmin) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
     this.where({ isDelete: { $ne: true } });
   }
   next();
@@ -162,7 +167,9 @@ UserSchema.pre<Query<any, any>>('findOne', function (next) {
 
 // Pre-hook for 'findOneAndUpdate'
 UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
-  if (!this.getOptions()?.isAdmin) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
     this.where({ isDelete: { $ne: true } });
   }
   next();
@@ -170,7 +177,9 @@ UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
 
 // Pre-hook for 'updateOne' (instead of 'update')
 UserSchema.pre<Query<any, any>>('updateOne', function (next) {
-  if (!this.getOptions()?.isAdmin) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
     this.where({ isDelete: { $ne: true } });
   }
   next();
@@ -178,7 +187,9 @@ UserSchema.pre<Query<any, any>>('updateOne', function (next) {
 
 // Pre-hook for 'updateMany'
 UserSchema.pre<Query<any, any>>('updateMany', function (next) {
-  if (!this.getOptions()?.isAdmin) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
     this.where({ isDelete: { $ne: true } });
   }
   next();
@@ -196,6 +207,7 @@ UserSchema.set('toJSON', {
     return ret;
   },
 });
+
 
 //! for pass if need
 // UserSchema.pre('save', function (next:NextFunction) {

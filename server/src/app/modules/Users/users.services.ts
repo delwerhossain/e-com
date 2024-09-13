@@ -68,29 +68,37 @@ const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
   }
 };
 //! this route only for admin
-
 const getAllUsersInToDB = async (
   filter: any,
   sort: any,
   page: number,
   limit: number,
+  options: { isAdmin: boolean }
 ) => {
   const skip = (page - 1) * limit;
 
-  // Prepare the query with filter, sort, pagination, and limit
-  const query = UserModel.find(filter)
-    .sort(sort)
-    .skip(skip)
-    .limit(limit)
-    .lean(); // Use .lean() to get plain JavaScript objects instead of Mongoose documents
+  // Aggregation pipeline to optimize filtering and search
+  const aggregationPipeline = [
+    { $match: filter },  // Apply the filters
+    { $sort: sort },     // Sort results
+    { $skip: skip },     // Pagination skip
+    { $limit: limit },   // Pagination limit
+    {
+      $project: {
+        passwordHash: 0,
+        // isDelete: 0, // Hide isDelete if not admin
+        // ...(options.isAdmin ? {} : { isDelete: { $ne: true } }), // Allow deleted users only for admin
+      },
+    },
+  ];
 
-  // Get the total count of documents that match the filter
+  // Execute the aggregation pipeline
+  const result = await UserModel.aggregate(aggregationPipeline, { allowDiskUse: true });
+
+  // Get the total count of documents matching the filter
   const total = await UserModel.countDocuments(filter);
 
-  // Execute the query to get the data
-  const result = await query.exec();
-
-  // Return the data and the total count
+  // Return data and total count
   return { data: result, total };
 };
 
