@@ -1,5 +1,5 @@
-import { IUser } from './users.interface';
-import { UserModel } from './users.model';
+import { IUser } from "../users.interface";
+import { UserModel } from "../users.model";
 
 
 const createUserInToDB = async (data: any) => {
