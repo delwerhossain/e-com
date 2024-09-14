@@ -112,5 +112,5 @@ export const CategoryControllers = {
   isActiveCategory,
   deleteCategory,
   updateACategory,
-  getInActiveCategories
+  getInActiveCategories,
 };
