@@ -114,5 +114,5 @@ export const ReviewServices = {
   isActiveReview, //front end prospective : admin can change a reviews active status with help of this
   updateReview, //a user can update his review by this
   deleteReview, //a user or a vendor or a admin can delete a review with this
-  bestReviews, // for get all best reviews.....admin can user the updateReview func for update the isBest field of a review.
+  bestReviews, // for get all best reviews.....admin can use the updateReview func for update the isBest field of a review.
 };

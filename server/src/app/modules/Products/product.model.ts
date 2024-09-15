@@ -1,4 +1,4 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IProduct } from './product.interface';
 
 const productSchema = new Schema<IProduct>(
@@ -14,7 +14,7 @@ const productSchema = new Schema<IProduct>(
     quantity: { type: Number, required: true, min: 0 },
     vendorId: { type: Schema.Types.ObjectId, ref: 'Vendor', required: true },
     subCategoryId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'SubCategory',
       required: false,
     },

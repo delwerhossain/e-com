@@ -109,8 +109,8 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       };
     }
 
-    //! todo => check if user is admin , need to use jwt token
-    const isAdmin = req.user?.isAdmin || false;
+//! todo => check if user is admin , need to use jwt token
+    const isAdmin =req.user ?.isAdmin || false;
     if (!isAdmin || showDeleted === 'false') {
       filter.isDelete = { $ne: true };
     }
@@ -164,7 +164,7 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Fetch the user from the database using either ID or email
-    const result = await UserService.getAUserInToDB(id, email);
+    const result = await UserService.getAUserInToDB(id as string , email as string );
 
     // If the user is not found, return a 404 response
     if (!result) {
