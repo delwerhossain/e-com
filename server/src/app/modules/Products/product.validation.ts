@@ -9,23 +9,42 @@ const objectIdSchema = z
   })
   .transform(val => new mongoose.Types.ObjectId(val));
 
+// Zod schema for IReviews
+const reviewsSchema = z.object({
+  reviewerId: objectIdSchema,
+  rating: z
+    .number()
+    .min(1, { message: 'Rating must be at least 1' })
+    .max(5, { message: 'Rating cannot exceed 5' }),
+  comment: z.string().optional(),
+  productId: objectIdSchema,
+  isDeleted: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  isBest: z.boolean().optional(),
+});
 
 // Zod schema for IProduct
-export const productValidation = z.object({
-    name: z.string().min(1, { message: "Product Name is required" }),
-    description: z.string().min(1, { message: "Description is required" }),
-    price: z.number().min(0, { message: "Price must be at least 0" }),
-    quantity: z.number().min(0, { message: "Quantity must be at least 0" }),
-    vendorId: objectIdSchema,
-    subCategoryId: objectIdSchema.optional(),
-    images: z.union([z.array(z.string()), z.string()]),
-    isFeatured: z.boolean().default(false),
-    isActive: z.boolean().default(false),
-    isDeleted: z.boolean().default(false),
-    isBestProduct: z.boolean().default(false),
-    ratings: z.object({
-        averageRating: z.number().min(0).max(5).optional(),
-        reviewsCount: z.number().min(0).optional(),
-    }).optional(),
+export const ProductValidation = z.object({
+  name: z.string().min(1, { message: 'Product Name is required' }),
+  description: z.string().min(1, { message: 'Description is required' }),
+  price: z.number().min(0, { message: 'Price must be at least 0' }),
+  quantity: z.number().min(0, { message: 'Quantity must be at least 0' }),
+  vendorId: objectIdSchema,
+  subCategoryId: objectIdSchema.optional(),
+  images: z.union([z.array(z.string()), z.string()]),
+  isFeatured: z.boolean().default(false),
+  isActive: z.boolean().default(false),
+  isDeleted: z.boolean().default(false),
+  isBestProduct: z.boolean().default(false),
 
+  // Ratings schema
+  ratings: z
+    .object({
+      averageRating: z.number().min(0).max(5).optional(),
+      reviewsCount: z.number().min(0).optional(),
+    })
+    .optional(),
+
+  // Optional reviews field validation
+  reviews: z.array(reviewsSchema).optional(),
 });
