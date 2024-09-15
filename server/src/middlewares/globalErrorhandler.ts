@@ -15,10 +15,10 @@ export const globalErrorHandler = (
 ) => {
   // Set default status code
   const statusCode = error.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
-  
+
   // Determine if stack trace should be included
   const showStack = process.env.NODE_ENV !== 'production';
-  
+
   // Handle specific error types
   if (error.name === 'ValidationError') {
     return res.status(httpStatus.BAD_REQUEST).json({
