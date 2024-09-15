@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { IReviews } from '../Reviews/reviews.interface';
 export interface IProduct {
   name: string;
   description: string;
@@ -11,8 +12,10 @@ export interface IProduct {
   isActive?: boolean;
   isDeleted?: boolean;
   isBestProduct?: boolean;
+  //not come form the vendor when he create a new product.......
   ratings?: {
     averageRating?: number;
     reviewsCount?: number;
   };
+  reviews?: IReviews[];
 }

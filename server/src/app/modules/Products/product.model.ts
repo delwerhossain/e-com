@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { IProduct } from './product.interface';
 
+// Product schema definition
 const productSchema = new Schema<IProduct>(
   {
     name: {
@@ -23,13 +24,39 @@ const productSchema = new Schema<IProduct>(
     isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
     isBestProduct: { type: Boolean, default: false },
+
+    // Ratings embedded as a subdocument
     ratings: {
       averageRating: { type: Number, default: 0, min: 0, max: 5 },
       reviewsCount: { type: Number, default: 0 },
+    },
+
+    // Optional reviews field as an array of subdocuments referencing IReviews
+    reviews: {
+      type: [
+        {
+          reviewerId: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+          },
+          rating: { type: Number, required: true, min: 1, max: 5 },
+          comment: { type: String },
+          productId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true,
+          },
+          isDeleted: { type: Boolean, default: false },
+          isActive: { type: Boolean, default: true },
+          isBest: { type: Boolean, default: false },
+        },
+      ],
+      default: [], // Set default to an empty array
     },
   },
   { timestamps: true },
 );
 
-// 3. Create a Model.
+// 3. Create a Model
 export const ProductModel = model<IProduct>('Product', productSchema);
