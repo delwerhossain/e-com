@@ -12,7 +12,9 @@ const AddressSchema = z.object({
 
 // Shared LastLogin Schema
 const LastLoginSchema = z.object({
-  timestamp: z.date().optional(),
+  timestamp: z.preprocess(arg => {
+    if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
+  }, z.date().optional()),
   ip: z.string().optional(),
 });
 
@@ -30,7 +32,9 @@ const UserProfileSchema = z.object({
   avatarUrl: z.string().trim().optional(),
   shippingAddress: AddressSchema.optional(),
   billingAddress: AddressSchema.optional(),
-  dateOfBirth: z.date().optional(),
+  dateOfBirth: z.preprocess(arg => {
+    if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
+  }, z.date().optional()),
   gender: z.enum(['male', 'female', 'other']).optional(),
 });
 

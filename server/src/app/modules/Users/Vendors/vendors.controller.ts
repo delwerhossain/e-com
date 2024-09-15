@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import config from '../../config';
-import { IUser } from './users.interface';
-import { UserValidation } from './users.validation';
 import bcrypt from 'bcrypt';
-import { UserService } from './users.services';
+import config from '../../../config';
+import { UserValidation } from '../users.validation';
+import { UserService } from './vendors.services';
+import { IUser } from '../users.interface';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, passwordHash } = req.body;
 
-    //! todo => salt rounds value 
+    //! todo => salt rounds value
     // Parse salt rounds with a fallback to default value if parsing fails
     const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
 
@@ -56,7 +56,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       page = '1',
-      limit = '10',
+      limit = '2',
       sortBy = 'createdAt',
       sortOrder = 'desc',
       role,
@@ -73,7 +73,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       createdTo,
       lastLoginFrom,
       lastLoginTo,
-      showDeleted = false,
+      showDeleted = false, //! todo need fix
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
@@ -83,12 +83,19 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     if (role) filter.role = role;
     if (name) filter['profile.name'] = new RegExp(name as string, 'i');
     if (email) filter.email = new RegExp(email as string, 'i');
-    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
-    if (address) filter['profile.shippingAddress.city'] = new RegExp(address as string, 'i');
+    if (number)
+      filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    if (address)
+      filter['profile.shippingAddress.city'] = new RegExp(
+        address as string,
+        'i',
+      );
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (emailVerified !== undefined) filter.emailVerified = emailVerified === 'true';
+    if (emailVerified !== undefined)
+      filter.emailVerified = emailVerified === 'true';
     if (gender) filter['profile.gender'] = gender;
 
+    console.log({ filter });
     // Date filters
     if (dateOfBirthFrom || dateOfBirthTo) {
       filter['profile.dateOfBirth'] = {
@@ -124,7 +131,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       sort,
       pageNumber,
       limitNumber,
-      { isAdmin }
+      { isAdmin },
     );
 
     const totalPages = Math.ceil(result.total / limitNumber);
@@ -147,7 +154,6 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     next(err);
   }
 };
-
 
 const getAUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -198,12 +204,13 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     }
     // last login timestamp is not allowed to update
     if (updateData.lastLogin) {
-      delete updateData.lastLogin.timestamp
+      delete updateData.lastLogin.timestamp;
     }
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+      const saltRounds =
+        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
       updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
     }
 
@@ -220,7 +227,10 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     const validatedData = UserValidation.userUpdateValidation.parse(updateData);
 
     // Update the user in the database
-    const updatedUser = await UserService.updateAUserInToDB(userID, validatedData);
+    const updatedUser = await UserService.updateAUserInToDB(
+      userID,
+      validatedData,
+    );
 
     // If the user is not found, return a 404 response
     if (!updatedUser) {
@@ -242,7 +252,6 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
 
 //! this route only for admin
 const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -267,7 +276,7 @@ const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const UserController = {
+export const VendorController = {
   getAllUsers,
   createUser,
   getAUser,

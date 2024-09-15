@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { Query } from 'mongoose';
 import {
   IAddress,
   ICommunicationPreferences,
@@ -17,9 +18,13 @@ export const AddressSchema = new Schema<IAddress>({
   country: { type: String, trim: true },
 });
 
+//! todo need to fix auto date take
 // LastLogin Schema
-export const LastLoginSchema = new Schema<ILoginDetails>({
-  timestamp: { type: Date },
+const LastLoginSchema = new Schema<ILoginDetails>({
+  timestamp: {
+    type: Date,
+    default: () => new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' }), // Automatically set to current date and time in Bangladesh time zone
+  },
   ip: { type: String },
 });
 
@@ -78,6 +83,8 @@ const VendorProfileModel = model<IVendorProfile>(
 );
 
 // User Schema
+
+// User Schema
 const UserSchema = new Schema<IUser>(
   {
     email: {
@@ -98,7 +105,7 @@ const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ['user', 'vendor'],
-      default: 'user',
+      default: 'vendor',
     },
     isDelete: {
       type: Boolean,
@@ -114,29 +121,101 @@ const UserSchema = new Schema<IUser>(
       validate: {
         validator: function (v: any) {
           if (this.role === 'vendor') {
-            // Create an instance of VendorProfileModel and validate
             const vendorProfile = new VendorProfileModel(v);
-            return vendorProfile
-              .validate()
-              .then(() => true)
-              .catch(() => false);
+            return vendorProfile.validate().then(() => true).catch(() => false);
           }
-          // Create an instance of UserProfileModel and validate
           const userProfile = new UserProfileModel(v);
-          return userProfile
-            .validate()
-            .then(() => true)
-            .catch(() => false);
+          return userProfile.validate().then(() => true).catch(() => false);
         },
         message: 'Profile data is invalid for the given role',
       },
     },
     communicationPreferences: CommunicationPreferencesSchema,
   },
-  { timestamps: true },
+  {
+    timestamps: true
+  },
 );
 
-// UserSchema.pre('save', function (next) {
+
+//! if user isDeleted is true then it will not be displayed , if admin request then it will be displayed
+// Pre-hook for 'find'
+UserSchema.pre<Query<any, any>>('find', function (next) {
+  const queryOptions = this.getOptions();
+  
+  // Check if the requester is not an admin
+  if (!queryOptions?.isAdmin) {
+    // Exclude users with isDelete: true for non-admins
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOne'
+UserSchema.pre<Query<any, any>>('findOne', function (next) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'findOneAndUpdate'
+UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateOne' (instead of 'update')
+UserSchema.pre<Query<any, any>>('updateOne', function (next) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Pre-hook for 'updateMany'
+UserSchema.pre<Query<any, any>>('updateMany', function (next) {
+  const queryOptions = this.getOptions();
+  
+  if (!queryOptions?.isAdmin) {
+    this.where({ isDelete: { $ne: true } });
+  }
+  next();
+});
+
+// Apply transformation for `dateOfBirth` when converting to JSON
+UserSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    // Format the dateOfBirth field as "YYYY-MM-DD"
+    if (ret.profile && ret.profile.dateOfBirth) {
+      ret.profile.dateOfBirth = ret.profile.dateOfBirth
+        .toISOString()
+        .split('T')[0];
+    }
+    return ret;
+  },
+});
+
+//**** Date Time Zone *******
+UserSchema.set('timestamps', {
+  currentTime: () => {
+    // Create a new Date object with the desired time zone offset (Asia/Dhaka)
+    const bangladeshTime = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
+    return new Date(bangladeshTime);
+  },
+});
+
+
+//! for pass if need
+// UserSchema.pre('save', function (next:NextFunction) {
 //   this.set('passwordHash', undefined, { strict: false });
 //   next();
 // });
