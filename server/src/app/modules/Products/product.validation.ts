@@ -11,7 +11,7 @@ const objectIdSchema = z
 
 
 // Zod schema for IProduct
-export const productValidation = z.object({
+export const ProductValidation = z.object({
     name: z.string().min(1, { message: "Product Name is required" }),
     description: z.string().min(1, { message: "Description is required" }),
     price: z.number().min(0, { message: "Price must be at least 0" }),

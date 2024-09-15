@@ -1,5 +1,11 @@
+import { ReviewServices } from '../Reviews/reviews.services';
 import { IProduct } from './product.interface';
 import { ProductModel } from './product.model';
+
+const getReview = (productID: string) => {
+  const result = ReviewServices.getProductReviews(productID);
+  return result
+};
 
 const getProducts = async () => {
   const result = await ProductModel.find({ isActive: true });
@@ -68,4 +74,16 @@ const deleteProduct = async (id: string) => {
   }
 
   return result;
+};
+
+export const ProductServices = {
+  getProducts,
+  getBestProducts,
+  getFeaturedProducts,
+  getSingleProduct,
+  getInActiveProducts,
+  createProduct,
+  isActiveProduct,
+  updateAProduct,
+  deleteProduct,
 };
