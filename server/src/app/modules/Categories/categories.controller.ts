@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { RequestHandler } from 'express';
 import { categoryValidation } from './categories.validation';
 import { CategoryServices } from './categories.services';
 
