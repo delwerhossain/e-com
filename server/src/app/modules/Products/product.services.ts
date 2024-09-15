@@ -45,3 +45,27 @@ const isActiveProduct = async (id: string, status: boolean) => {
   }
   return result;
 };
+
+const updateAProduct = async (id: string, productData: Partial<IProduct>) => {
+  const result = await ProductModel.findByIdAndUpdate(
+    id,
+    { $set: productData },
+    { new: true },
+  );
+
+  if (!result) {
+    return { Not_found: 'Product not found' };
+  }
+
+  return result;
+};
+
+const deleteProduct = async (id: string) => {
+  const result = await ProductModel.findByIdAndDelete(id);
+
+  if (!result) {
+    return { Not_found: 'Product not found' };
+  }
+
+  return result;
+};
