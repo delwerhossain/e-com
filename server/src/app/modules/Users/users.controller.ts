@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
-import { IUser } from './users.interface';
+import { IUser, IVendorProfile } from './users.interface';
 import { UserValidation } from './users.validation';
 import bcrypt from 'bcrypt';
 import { UserService } from './users.services';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, passwordHash } = req.body;
+    const { email, passwordHash, emailVerified, phoneNumber } = req.body;
 
-    //! todo => salt rounds value 
+    //! todo => salt rounds value
     // Parse salt rounds with a fallback to default value if parsing fails
     const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
 
@@ -19,9 +19,10 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // Create the user object
     const data: IUser = {
       email,
-      emailVerified: req.body.emailVerified ?? false, // Default to false if not provided
+      emailVerified: emailVerified ?? false, // Default to false if not provided
       passwordHash: hashedPassword,
       role: 'user',
+      phoneNumber: phoneNumber,
     };
 
     // Validate the user data with Zod
@@ -59,7 +60,6 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       limit = '10',
       sortBy = 'createdAt',
       sortOrder = 'desc',
-      role,
       name,
       email,
       number,
@@ -78,15 +78,22 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
+    const role = 'user'; //! must be search user role
 
     const filter: any = {};
     if (role) filter.role = role;
     if (name) filter['profile.name'] = new RegExp(name as string, 'i');
     if (email) filter.email = new RegExp(email as string, 'i');
-    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
-    if (address) filter['profile.shippingAddress.city'] = new RegExp(address as string, 'i');
+    if (number)
+      filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    if (address)
+      filter['profile.shippingAddress.city'] = new RegExp(
+        address as string,
+        'i',
+      );
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (emailVerified !== undefined) filter.emailVerified = emailVerified === 'true';
+    if (emailVerified !== undefined)
+      filter.emailVerified = emailVerified === 'true';
     if (gender) filter['profile.gender'] = gender;
 
     // Date filters
@@ -109,8 +116,8 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       };
     }
 
-//! todo => check if user is admin , need to use jwt token
-    const isAdmin =req.user ?.isAdmin || false;
+    //! todo => check if user is admin , need to use jwt token
+    const isAdmin = req.user?.isAdmin || false;
     if (!isAdmin || showDeleted === 'false') {
       filter.isDelete = { $ne: true };
     }
@@ -124,7 +131,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       sort,
       pageNumber,
       limitNumber,
-      { isAdmin }
+      { isAdmin },
     );
 
     const totalPages = Math.ceil(result.total / limitNumber);
@@ -148,7 +155,6 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-
 const getAUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id, email } = req.query;
@@ -164,7 +170,10 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Fetch the user from the database using either ID or email
-    const result = await UserService.getAUserInToDB(id as string , email as string );
+    const result = await UserService.getAUserInToDB(
+      id as string,
+      email as string,
+    );
 
     // If the user is not found, return a 404 response
     if (!result) {
@@ -198,12 +207,13 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     }
     // last login timestamp is not allowed to update
     if (updateData.lastLogin) {
-      delete updateData.lastLogin.timestamp
+      delete updateData.lastLogin.timestamp;
     }
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+      const saltRounds =
+        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
       updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
     }
 
@@ -220,7 +230,10 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     const validatedData = UserValidation.userUpdateValidation.parse(updateData);
 
     // Update the user in the database
-    const updatedUser = await UserService.updateAUserInToDB(userID, validatedData);
+    const updatedUser = await UserService.updateAUserInToDB(
+      userID,
+      validatedData as Partial<IUser>,
+    );
 
     // If the user is not found, return a 404 response
     if (!updatedUser) {
@@ -242,7 +255,6 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
 
 //! this route only for admin
 const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
