@@ -1,9 +1,11 @@
 import { Types } from 'mongoose';
 import { IReviews } from './reviews.interface';
 import { ReviewsModel } from './reviews.model';
+import { ProductModel } from '../Products/product.model';
 
 // Function to create a new review
 const createReview = async (review: IReviews) => {
+  //TODO const addIntoProduct = await ProductModel.findByIdAndUpdate();............working left-->This function for the products reviews adding
   // Create a new review and save it in the database
   const result = await ReviewsModel.create(review);
   return result;
@@ -16,7 +18,7 @@ const getProductReviews = async (productId: Types.ObjectId) => {
     isActive: true,
     productId: productId, // Query by ObjectId
   });
-console.log(result)
+  console.log(result);
   return result; // Return the array directly, even if it's empty
 };
 // Function to fetch best reviews
