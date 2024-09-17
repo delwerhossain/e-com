@@ -28,7 +28,6 @@ const CommunicationPreferencesSchema = z.object({
 // User Profile Schema
 const UserProfileSchema = z.object({
   name: z.string().trim().optional(),
-  phoneNumber: z.string().trim().optional(),
   avatarUrl: z.string().trim().optional(),
   shippingAddress: AddressSchema.optional(),
   billingAddress: AddressSchema.optional(),
@@ -66,7 +65,7 @@ const VendorProfileSchema = z.object({
   contactInfo: z
     .object({
       contactEmail: z.string().trim().optional(),
-      contactPhone: z.string().trim().optional(),
+      publicPhone: z.string().trim().optional(),
       contactAddress: AddressSchema.optional(),
     })
     .optional(),
@@ -75,6 +74,7 @@ const VendorProfileSchema = z.object({
 // Base User Schema
 const BaseUserSchema = z.object({
   email: z.string().email().trim(),
+  phoneNumber: z.string().trim().optional(),
   emailVerified: z.boolean().default(false),
   passwordHash: z.string().trim(),
   role: z.enum(['user', 'vendor']).default('user'),
