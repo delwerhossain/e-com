@@ -5,11 +5,83 @@ import { ProductModel } from '../Products/product.model';
 
 // Function to create a new review
 const createReview = async (review: IReviews) => {
-  //TODO const addIntoProduct = await ProductModel.findByIdAndUpdate();............working left-->This function for the products reviews adding
+  const addReviewIntoProduct = await ProductModel.findByIdAndUpdate(
+    review?.productId,
+    {
+      $set: { reviews: review },
+    },
+
+  );
   // Create a new review and save it in the database
   const result = await ReviewsModel.create(review);
   return result;
 };
+
+
+
+
+
+
+// const createReview = async (review: IReviews) => {
+//   // Create a new review and save it in the database
+//   const newReview = await ReviewsModel.create(review);
+
+//   // Update the product with the new review
+//   const productId = review.productId;
+
+//   // Find the product and add the new review
+//   const product = await ProductModel.findById(productId);
+//   if (!product) {
+//     throw new Error('Product not found');
+//   }
+
+//   // Add the new review to the product's reviews array
+//   product.reviews.push(newReview._id);
+
+//   // Calculate the total and average ratings
+//   const productReviews = await ReviewsModel.find({
+//     productId: productId,
+//     isActive: true, // Consider only active reviews
+//   });
+
+//   const totalRatings = productReviews.reduce(
+//     (sum, review) => sum + review.rating,
+//     0,
+//   );
+//   const averageRating = productReviews.length > 0
+//     ? totalRatings / productReviews.length
+//     : 0;
+
+//   // Update product ratings and review count
+//   product.ratings = {
+//     averageRating: averageRating,
+//     reviewsCount: productReviews.length,
+//   };
+
+//   // Save the updated product
+//   await product.save();
+
+//   return newReview;
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Function to fetch active reviews for a specific product
 const getProductReviews = async (productId: Types.ObjectId) => {
