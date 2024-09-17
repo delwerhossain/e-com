@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { ReviewServices } from '../Reviews/reviews.services';
 import { IProduct } from './product.interface';
 import { ProductModel } from './product.model';
@@ -15,7 +16,9 @@ const getSingleProduct = async (id: string) => {
   }
 
   // Fetch product reviews
-  const productReviews = await ReviewServices.getProductReviews(id);
+  const productReviews = await ReviewServices.getProductReviews(
+    new Types.ObjectId(id),
+  );
 
   // Check if reviews exist and are in array format
   if (

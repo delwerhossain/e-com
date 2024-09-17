@@ -18,4 +18,8 @@ export interface IProduct {
     reviewsCount?: number;
   };
   reviews?: IReviews[];
+  discountPercentage?: number; // Discount percentage for sale items
+  discountedPrice?: number;
+  outOfStock?: boolean;
+  weight: string;
 }

@@ -54,8 +54,18 @@ const productSchema = new Schema<IProduct>(
       ],
       default: [], // Set default to an empty array
     },
+
+    // Discount and pricing fields
+    discountPercentage: { type: Number, default: 0 }, // Default discount 0%
+    discountedPrice: { type: Number }, // Calculated discounted price (can be handled in business logic)
+
+    // Stock management
+    outOfStock: { type: Boolean, default: false }, // Indicate if the product is out of stock
+
+    // Product weight for shipping calculations
+    weight: { type: String, required: [true, 'Product weight is required'] },
   },
-  { timestamps: true },
+  { timestamps: true }, // Automatically handle createdAt and updatedAt
 );
 
 // 3. Create a Model

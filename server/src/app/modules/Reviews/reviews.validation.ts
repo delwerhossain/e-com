@@ -24,7 +24,7 @@ const reviewsValidation = z.object({
     .max(1000, { message: 'Comment cannot exceed 1000 characters' })
     .optional(),
   productId: objectIdSchema,
-  isActive: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   isDeleted: z.boolean().default(false),
   isBest: z.boolean().default(false),
 });

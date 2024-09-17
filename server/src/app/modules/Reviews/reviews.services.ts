@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { IReviews } from './reviews.interface';
 import { ReviewsModel } from './reviews.model';
 
@@ -9,16 +10,14 @@ const createReview = async (review: IReviews) => {
 };
 
 // Function to fetch active reviews for a specific product
-const getProductReviews = async (productId: string) => {
-  // Find all reviews that are marked as active for the given product ID
+const getProductReviews = async (productId: Types.ObjectId) => {
+  console.log(productId);
   const result = await ReviewsModel.find({
     isActive: true,
-    productId: productId,
+    productId: productId, // Query by ObjectId
   });
-  if (!result) {
-    return { Not_found: 'Review not found' };
-  }
-  return result;
+console.log(result)
+  return result; // Return the array directly, even if it's empty
 };
 // Function to fetch best reviews
 const bestReviews = async () => {

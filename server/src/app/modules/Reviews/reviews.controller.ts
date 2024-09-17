@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import reviewsValidation from './reviews.validation';
 import { ReviewServices } from './reviews.services';
+import { ObjectId, Types } from 'mongoose';
 
 // Controller to create a new review
 const createReview: RequestHandler = async (req, res, next) => {
@@ -16,19 +17,27 @@ const createReview: RequestHandler = async (req, res, next) => {
     next(error); // Handle validation errors or service errors
   }
 };
-
 // Controller to fetch active reviews for a specific product
 const getProductReviews: RequestHandler = async (req, res, next) => {
   try {
     const { productId } = req.params; // Extract productId from route params
-    const result = await ReviewServices.getProductReviews(productId);
+
+    // Validate and ensure productId is a valid ObjectId
+    if (!Types.ObjectId.isValid(productId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Product ID' });
+    }
+    const result = await ReviewServices.getProductReviews(
+      new Types.ObjectId(productId),
+    );
     res.status(200).json({
       success: true,
-      message: 'product all Reviews Fetched successfully',
+      message: 'Product reviews fetched successfully',
       data: result,
     });
   } catch (error) {
-    next(error);
+    next(error); // Pass any error to error handler middleware
   }
 };
 
