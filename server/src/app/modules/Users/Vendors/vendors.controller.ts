@@ -195,10 +195,6 @@ const updateAVendor = async (req: Request, res: Response, next: NextFunction) =>
     const userRowData = req.body;
     const { passwordHash, ...updateData } = userRowData;
 
-    // Convert dateOfBirth to Date object if present
-    if (updateData.profile?.dateOfBirth) {
-      updateData.profile.dateOfBirth = new Date(updateData.profile.dateOfBirth);
-    }
     // last login timestamp is not allowed to update
     if (updateData.lastLogin) {
       delete updateData.lastLogin.timestamp;
