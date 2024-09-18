@@ -3,6 +3,19 @@ import { IReviews } from './reviews.interface';
 import { ReviewsModel } from './reviews.model';
 import { ProductModel } from '../Products/product.model';
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 const createReview = async (review: IReviews) => {
   try {
     // Create a new review and save it in the database
@@ -27,15 +40,15 @@ const createReview = async (review: IReviews) => {
     );
     const averageRating =
       activeReviews.length > 0 ? totalRatings / activeReviews.length : 0;
-    const setAverageRating = Number(averageRating.toFixed(2)); // Rounded to 2 decimal places
+    const setAverageRating = Number(averageRating.toFixed(1)); // Rounded to 2 decimal places
 
     // Update the product's ratings and review count
     product.ratings = {
-      averageRating: 0, // Ensure only 2 decimal places are saved
+      averageRating:setAverageRating, // Ensure only 2 decimal places are saved
       reviewsCount: activeReviews.length,
     };
 
-    await product.save(); // Save the updated product details
+    // await product.save(); // Save the updated product details
 
     return newReview;
   } catch (error) {
@@ -43,6 +56,31 @@ const createReview = async (review: IReviews) => {
     throw new Error('Could not create review. Please try again later.');
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Function to fetch active reviews for a specific product
 const getProductReviews = async (productId: Types.ObjectId) => {
