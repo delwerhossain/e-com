@@ -17,7 +17,7 @@ export interface IProduct {
     averageRating?: number;
     reviewsCount?: number;
   };
-  reviews?: IReviews[];
+  reviews?: Types.ObjectId[];
   discountPercentage?: number; // Discount percentage for sale items
   discountedPrice?: number;
   outOfStock?: boolean;

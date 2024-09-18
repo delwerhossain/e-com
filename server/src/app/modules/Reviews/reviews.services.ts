@@ -3,85 +3,46 @@ import { IReviews } from './reviews.interface';
 import { ReviewsModel } from './reviews.model';
 import { ProductModel } from '../Products/product.model';
 
-// Function to create a new review
 const createReview = async (review: IReviews) => {
-  const addReviewIntoProduct = await ProductModel.findByIdAndUpdate(
-    review?.productId,
-    {
-      $set: { reviews: review },
-    },
+  try {
+    // Create a new review and save it in the database
+    const newReview = await ReviewsModel.create(review);
 
-  );
-  // Create a new review and save it in the database
-  const result = await ReviewsModel.create(review);
-  return result;
+    // Find the product by productId from the review
+    const product = await ProductModel.findById(review.productId);
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Fetch all active reviews for the product in a single query
+    const activeReviews = await ReviewsModel.find({
+      productId: review.productId,
+      isActive: true,
+    });
+
+    // Calculate total ratings and average rating
+    const totalRatings = activeReviews.reduce(
+      (sum, { rating }) => sum + rating,
+      0,
+    );
+    const averageRating =
+      activeReviews.length > 0 ? totalRatings / activeReviews.length : 0;
+    const setAverageRating = Number(averageRating.toFixed(2)); // Rounded to 2 decimal places
+
+    // Update the product's ratings and review count
+    product.ratings = {
+      averageRating: 0, // Ensure only 2 decimal places are saved
+      reviewsCount: activeReviews.length,
+    };
+
+    await product.save(); // Save the updated product details
+
+    return newReview;
+  } catch (error) {
+    console.error('Error creating review:', error);
+    throw new Error('Could not create review. Please try again later.');
+  }
 };
-
-
-
-
-
-
-// const createReview = async (review: IReviews) => {
-//   // Create a new review and save it in the database
-//   const newReview = await ReviewsModel.create(review);
-
-//   // Update the product with the new review
-//   const productId = review.productId;
-
-//   // Find the product and add the new review
-//   const product = await ProductModel.findById(productId);
-//   if (!product) {
-//     throw new Error('Product not found');
-//   }
-
-//   // Add the new review to the product's reviews array
-//   product.reviews.push(newReview._id);
-
-//   // Calculate the total and average ratings
-//   const productReviews = await ReviewsModel.find({
-//     productId: productId,
-//     isActive: true, // Consider only active reviews
-//   });
-
-//   const totalRatings = productReviews.reduce(
-//     (sum, review) => sum + review.rating,
-//     0,
-//   );
-//   const averageRating = productReviews.length > 0
-//     ? totalRatings / productReviews.length
-//     : 0;
-
-//   // Update product ratings and review count
-//   product.ratings = {
-//     averageRating: averageRating,
-//     reviewsCount: productReviews.length,
-//   };
-
-//   // Save the updated product
-//   await product.save();
-
-//   return newReview;
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Function to fetch active reviews for a specific product
 const getProductReviews = async (productId: Types.ObjectId) => {
@@ -125,14 +86,20 @@ const getInActiveReviews = async (productId: string) => {
 };
 
 // Function to fetch all reviews regardless of their status
-const getALLReviews = async () => {
+const getALLActiveReviews = async () => {
   // Find all reviews in the database
-  const result = await ReviewsModel.find();
+  const result = await ReviewsModel.find({ isActive: true });
+  return result;
+};
+
+const getAllInActiveReviews = async () => {
+  // Find all reviews in the database
+  const result = await ReviewsModel.find({ isActive: false });
   return result;
 };
 
 // Function to toggle or set the active status of a review
-const isActiveReview = async (id: string, status: boolean) => {
+const isActiveReview = async (id: string, status: Boolean) => {
   // Find a review by ID and update its active status
   const result = await ReviewsModel.findByIdAndUpdate(
     id,
@@ -144,7 +111,6 @@ const isActiveReview = async (id: string, status: boolean) => {
   if (!result) {
     return { Not_found: 'Review not found' };
   }
-
   return result;
 };
 
@@ -183,9 +149,10 @@ export const ReviewServices = {
   getProductReviews, //get a specific products  all review
   getAReview, // get a single review with its object id
   getInActiveReviews, //front end prospective : admin can see all Bad inactive reviews of a product and if want he can active them..
-  getALLReviews, //front end prospective : admin can see all active reviews to show them on what our client say about us section admin can make the review as isBest review / or change the active status form here also
+  getALLActiveReviews, //front end prospective : admin can see all active reviews to show them on what our client say about us section admin can make the review as isBest review / or change the active status form here also
   isActiveReview, //front end prospective : admin can change a reviews active status with help of this
   updateReview, //a user can update his review by this
   deleteReview, //a user or a vendor or a admin can delete a review with this
   bestReviews, // for get all best reviews.....admin can use the updateReview func for update the isBest field of a review.
+  getAllInActiveReviews,
 };

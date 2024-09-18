@@ -10,18 +10,18 @@ const objectIdSchema = z
   .transform(val => new mongoose.Types.ObjectId(val));
 
 // Zod schema for IReviews
-const reviewsSchema = z.object({
-  reviewerId: objectIdSchema,
-  rating: z
-    .number()
-    .min(1, { message: 'Rating must be at least 1' })
-    .max(5, { message: 'Rating cannot exceed 5' }),
-  comment: z.string().optional(),
-  productId: objectIdSchema,
-  isDeleted: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  isBest: z.boolean().optional(),
-});
+// const reviewsSchema = z.object({
+//   reviewerId: objectIdSchema,
+//   rating: z
+//     .number()
+//     .min(1, { message: 'Rating must be at least 1' })
+//     .max(5, { message: 'Rating cannot exceed 5' }),
+//   comment: z.string().optional(),
+//   productId: objectIdSchema,
+//   isDeleted: z.boolean().optional(),
+//   isActive: z.boolean().optional(),
+//   isBest: z.boolean().optional(),
+// });
 
 // Zod schema for IProduct
 export const ProductValidation = z.object({
@@ -47,7 +47,7 @@ export const ProductValidation = z.object({
     .optional(),
 
   // Optional reviews field validation
-  reviews: z.array(reviewsSchema).optional(),
+  reviews: z.array(objectIdSchema).optional(),
 
   // New fields added
   discountPercentage: z.number().min(0).max(100).optional(), // Discount percentage validation (0-100%)
