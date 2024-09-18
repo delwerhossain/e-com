@@ -1,24 +1,22 @@
 import mongoose from 'mongoose';
 import { z } from 'zod';
 
-// Shared Address Schema
+// Address Schema
 const AddressSchema = z.object({
-  street: z.string().trim().optional(),
-  city: z.string().trim().optional(),
-  state: z.string().trim().optional(),
-  postalCode: z.string().trim().optional(),
-  country: z.string().trim().optional(),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
 });
 
-// Shared LastLogin Schema
+// LastLogin Schema
 const LastLoginSchema = z.object({
-  timestamp: z.preprocess(arg => {
-    if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
-  }, z.date().optional()),
+  timestamp: z.preprocess(arg => (typeof arg === 'string' || arg instanceof Date ? new Date(arg) : undefined), z.date().optional()),
   ip: z.string().optional(),
 });
 
-// Shared Communication Preferences Schema
+// Communication Preferences Schema
 const CommunicationPreferencesSchema = z.object({
   email: z.boolean().default(true),
   sms: z.boolean().default(true),
@@ -27,99 +25,75 @@ const CommunicationPreferencesSchema = z.object({
 
 // User Profile Schema
 const UserProfileSchema = z.object({
-  name: z.string().trim().optional(),
-  phoneNumber: z.string().trim().optional(),
-  avatarUrl: z.string().trim().optional(),
+  name: z.string().optional(),
+  avatarUrl: z.string().optional(),
   shippingAddress: AddressSchema.optional(),
   billingAddress: AddressSchema.optional(),
-  dateOfBirth: z.preprocess(arg => {
-    if (typeof arg === 'string' || arg instanceof Date) return new Date(arg);
-  }, z.date().optional()),
+  dateOfBirth: z.preprocess(arg => (typeof arg === 'string' || arg instanceof Date ? new Date(arg) : undefined), z.date().optional()),
   gender: z.enum(['male', 'female', 'other']).optional(),
 });
 
 // Vendor Profile Schema
 const VendorProfileSchema = z.object({
-  businessName: z.string().trim(),
-  avatarUrl: z.string().trim().optional(),
-  description: z.string().trim().optional(),
-  ratings: z
-    .object({
-      averageRating: z.number().default(0),
-      reviewCount: z.number().default(0),
-    })
-    .optional(),
-  businessCategoryID: z
-    .string()
-    .refine(val => mongoose.Types.ObjectId.isValid(val), {
-      message: 'Invalid business Category ID',
-    }),
-  websiteUrl: z.string().trim().optional(),
-  socialMediaLinks: z
-    .object({
-      facebook: z.string().trim().optional(),
-      twitter: z.string().trim().optional(),
-      instagram: z.string().trim().optional(),
-    })
-    .optional(),
-  taxId: z.string().trim().optional(),
-  contactInfo: z
-    .object({
-      contactEmail: z.string().trim().optional(),
-      contactPhone: z.string().trim().optional(),
-      contactAddress: AddressSchema.optional(),
-    })
-    .optional(),
+  businessName: z.string(),
+  avatarUrl: z.string().optional(),
+  description: z.string().optional(),
+  ratings: z.object({
+    averageRating: z.number().default(0),
+    reviewCount: z.number().default(0),
+  }).optional(),
+  businessCategoryID: z.string().refine(val => mongoose.Types.ObjectId.isValid(val), { message: 'Invalid business Category ID' }),
+  websiteUrl: z.string().optional(),
+  socialMediaLinks: z.object({
+    facebook: z.string().optional(),
+    twitter: z.string().optional(),
+    instagram: z.string().optional(),
+  }).optional(),
+  taxId: z.string().optional(),
+  contactInfo: z.object({
+    contactEmail: z.string().optional(),
+    publicPhone: z.string().optional(),
+    contactAddress: AddressSchema.optional(),
+  }).optional(),
 });
 
-// Base User Schema
-const BaseUserSchema = z.object({
-  email: z.string().email().trim(),
+
+// User Schema
+const userValidation = z.object({
+  email: z.string().email(),
+  phoneNumber: z.string().optional(),
   emailVerified: z.boolean().default(false),
-  passwordHash: z.string().trim(),
+  passwordHash: z.string(),
   role: z.enum(['user', 'vendor']).default('user'),
   isDelete: z.boolean().default(false),
   isActive: z.boolean().default(true),
   lastLogin: LastLoginSchema.optional(),
-  profile: z.union([UserProfileSchema, VendorProfileSchema]).optional(),
+  profile: UserProfileSchema.optional(),
   communicationPreferences: CommunicationPreferencesSchema.optional(),
 });
 
-// Conditional Validation Schema
-const UserValidationSchema = BaseUserSchema.refine(
-  data => {
-    // Allow profile to be optional, but validate it if present
-    if (data.role === 'vendor') {
-      if (
-        data.profile &&
-        !VendorProfileSchema.safeParse(data.profile).success
-      ) {
-        return false;
-      }
-    } else {
-      if (data.profile && !UserProfileSchema.safeParse(data.profile).success) {
-        return false;
-      }
-    }
-    return true;
-  },
-  {
-    message: 'Profile data is invalid for the given role',
-    path: ['profile'],
-  },
-);
+// vendor  Schema
+const vendorValidation = z.object({
+  email: z.string().email(),
+  phoneNumber: z.string().optional(),
+  emailVerified: z.boolean().default(false),
+  passwordHash: z.string(),
+  role: z.enum(['user', 'vendor']).default('user'),
+  isDelete: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+  lastLogin: LastLoginSchema.optional(),
+  profile: VendorProfileSchema.optional(),
+  communicationPreferences: CommunicationPreferencesSchema.optional(),
+});
 
-// Partial Update Schemas (before refine)
-const userUpdateValidation = BaseUserSchema.partial();
-const vendorUpdateValidation = BaseUserSchema.partial();
+// partial without refinement for update
+const userUpdateValidation = userValidation.partial();
+const vendorUpdateValidation = vendorValidation.partial();
 
 // Exported Validation Objects
-const userValidation = UserValidationSchema;
-const vendorValidation = UserValidationSchema;
-
 export const UserValidation = {
   userValidation,
-  userUpdateValidation,
+  userUpdateValidation, 
   vendorValidation,
-  vendorUpdateValidation,
+  vendorUpdateValidation, 
 };

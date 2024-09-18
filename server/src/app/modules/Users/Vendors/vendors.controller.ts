@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import config from '../../../config';
-import { UserValidation } from '../users.validation';
-import { UserService } from './vendors.services';
 import { IUser } from '../users.interface';
+import { VendorService } from './vendors.services';
+import { UserValidation } from '../users.validation';
 
-const createUser = async (req: Request, res: Response, next: NextFunction) => {
+const createVendor = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, passwordHash } = req.body;
+    const { email, passwordHash ,emailVerified, phoneNumber} = req.body;
 
     //! todo => salt rounds value
     // Parse salt rounds with a fallback to default value if parsing fails
@@ -16,27 +16,30 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // Hash the password with correct salt rounds
     const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
 
-    // Create the user object
+    // Create the vendor object
     const data: IUser = {
       email,
-      emailVerified: req.body.emailVerified ?? false, // Default to false if not provided
+      phoneNumber: phoneNumber,
+      emailVerified: emailVerified ?? false, // Default to false if not provided
       passwordHash: hashedPassword,
-      role: 'user',
+      role: 'vendor',
+      isActive: false,
     };
 
-    // Validate the user data with Zod
-    const validatedData = UserValidation.userValidation.parse(data);
+    // Validate the vendor data with Zod
+    const validatedData = UserValidation.vendorValidation.parse(data);
 
-    // Create the user in the database
-    const result = await UserService.createUserInToDB(validatedData);
+    // Create the vendor in the database
+    const result = await VendorService.createVendorInToDB(validatedData);
 
-    // Return the created user, excluding sensitive information like password
+    // Return the created vendor, excluding sensitive information like password
     res.status(201).json({
       success: true,
       statusCode: 201,
-      user: {
+      vendor: {
         email: result.email,
         emailVerified: result.emailVerified,
+        phoneNumber: result?.phoneNumber
       },
     });
   } catch (error: any) {
@@ -51,73 +54,67 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 //! this route only for admin
-// Admin-only route for getting all users with advanced search
-const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+const getAllVendors = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       page = '1',
-      limit = '2',
+      limit = '10',
       sortBy = 'createdAt',
       sortOrder = 'desc',
-      role,
-      name,
+      businessName,
       email,
       number,
-      address,
+      businessCategory,
       isActive,
-      emailVerified,
-      gender,
-      dateOfBirthFrom,
-      dateOfBirthTo,
+      ratingsFrom,
+      ratingsTo,
+      reviewCountFrom,
+      reviewCountTo,
       createdFrom,
       createdTo,
-      lastLoginFrom,
-      lastLoginTo,
-      showDeleted = false, //! todo need fix
+      showDeleted = false,
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
+    
+    // Only search for vendors
+    const role = 'vendor'; 
 
     const filter: any = {};
     if (role) filter.role = role;
-    if (name) filter['profile.name'] = new RegExp(name as string, 'i');
-    if (email) filter.email = new RegExp(email as string, 'i');
-    if (number)
-      filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
-    if (address)
-      filter['profile.shippingAddress.city'] = new RegExp(
-        address as string,
-        'i',
-      );
+    if (businessName) filter['profile.businessName'] = new RegExp(businessName as string, 'i');
+    if (email) filter['profile.email'] = new RegExp(email as string, 'i');
+    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    if (businessCategory) filter['profile.businessCategoryID'] = businessCategory;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (emailVerified !== undefined)
-      filter.emailVerified = emailVerified === 'true';
-    if (gender) filter['profile.gender'] = gender;
 
-    console.log({ filter });
-    // Date filters
-    if (dateOfBirthFrom || dateOfBirthTo) {
-      filter['profile.dateOfBirth'] = {
-        ...(dateOfBirthFrom && { $gte: new Date(dateOfBirthFrom as string) }),
-        ...(dateOfBirthTo && { $lte: new Date(dateOfBirthTo as string) }),
+    // Rating filters
+    if (ratingsFrom || ratingsTo) {
+      filter['profile.ratings.averageRating'] = {
+        ...(ratingsFrom && { $gte: parseFloat(ratingsFrom as string) }),
+        ...(ratingsTo && { $lte: parseFloat(ratingsTo as string) }),
       };
     }
+    
+    // Review count filters
+    if (reviewCountFrom || reviewCountTo) {
+      filter['profile.ratings.reviewCount'] = {
+        ...(reviewCountFrom && { $gte: parseInt(reviewCountFrom as string, 10) }),
+        ...(reviewCountTo && { $lte: parseInt(reviewCountTo as string, 10) }),
+      };
+    }
+
+    // Date filters
     if (createdFrom || createdTo) {
       filter.createdAt = {
         ...(createdFrom && { $gte: new Date(createdFrom as string) }),
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-    if (lastLoginFrom || lastLoginTo) {
-      filter['lastLogin.timestamp'] = {
-        ...(lastLoginFrom && { $gte: new Date(lastLoginFrom as string) }),
-        ...(lastLoginTo && { $lte: new Date(lastLoginTo as string) }),
-      };
-    }
 
-    //! todo => check if user is admin , need to use jwt token
-    const isAdmin = req.user?.isAdmin || false;
+    // Only admins can see deleted vendors
+    const isAdmin = req.vendor?.isAdmin || false;
     if (!isAdmin || showDeleted === 'false') {
       filter.isDelete = { $ne: true };
     }
@@ -126,7 +123,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
 
     // Use the optimized DB function
-    const result = await UserService.getAllUsersInToDB(
+    const result = await VendorService.getAllVendorsInToDB(
       filter,
       sort,
       pageNumber,
@@ -139,7 +136,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({
       success: true,
       statusCode: 200,
-      message: 'Users retrieved successfully',
+      message: 'Vendors retrieved successfully',
       meta: {
         currentPage: pageNumber,
         limit: limitNumber,
@@ -155,7 +152,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getAUser = async (req: Request, res: Response, next: NextFunction) => {
+const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id, email } = req.query;
 
@@ -165,43 +162,39 @@ const getAUser = async (req: Request, res: Response, next: NextFunction) => {
         success: false,
         statusCode: 400,
         message:
-          'Please provide either an ID or an email to search for a user.',
+          'Please provide either an ID or an email to search for a vendor.',
       });
     }
 
-    // Fetch the user from the database using either ID or email
-    const result = await UserService.getAUserInToDB(id, email);
+    // Fetch the vendor from the database using either ID or email
+    const result = await VendorService.getAVendorInToDB(id as string , email as string);
 
-    // If the user is not found, return a 404 response
+    // If the vendor is not found, return a 404 response
     if (!result) {
       return res.status(404).json({
         success: false,
         statusCode: 404,
-        message: 'User not found',
+        message: 'Vendor not found',
       });
     }
 
-    // If the user is found, return the safe user information with a 200 status
+    // If the vendor is found, return the safe vendor information with a 200 status
     res.status(200).json({
       success: true,
       statusCode: 200,
-      message: 'User retrieved successfully',
-      user: result, // Returning the user data with sensitive information excluded
+      message: 'Vendor retrieved successfully',
+      vendor: result, // Returning the vendor data with sensitive information excluded
     });
   } catch (error: any) {
     next(error);
   }
 };
-const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
+const updateAVendor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userID = req.params.id;
     const userRowData = req.body;
     const { passwordHash, ...updateData } = userRowData;
 
-    // Convert dateOfBirth to Date object if present
-    if (updateData.profile?.dateOfBirth) {
-      updateData.profile.dateOfBirth = new Date(updateData.profile.dateOfBirth);
-    }
     // last login timestamp is not allowed to update
     if (updateData.lastLogin) {
       delete updateData.lastLogin.timestamp;
@@ -224,29 +217,29 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Validate the update data using Zod
-    const validatedData = UserValidation.userUpdateValidation.parse(updateData);
+    const validatedData = UserValidation.vendorUpdateValidation.parse(updateData);
 
-    // Update the user in the database
-    const updatedUser = await UserService.updateAUserInToDB(
+    // Update the vendor in the database
+    const updatedVendor = await VendorService.updateAVendorInToDB(
       userID,
-      validatedData,
+      validatedData as Partial<IUser>,
     );
 
-    // If the user is not found, return a 404 response
-    if (!updatedUser) {
+    // If the vendor is not found, return a 404 response
+    if (!updatedVendor) {
       return res.status(404).json({
         success: false,
         statusCode: 404,
-        message: 'User not found',
+        message: 'Vendor not found',
       });
     }
 
-    // Return the updated user data
+    // Return the updated vendor data
     return res.status(200).json({
       success: true,
       statusCode: 200,
-      message: 'User updated successfully!',
-      data: updatedUser,
+      message: 'Vendor updated successfully!',
+      data: updatedVendor,
     });
   } catch (error: any) {
     next(error);
@@ -254,22 +247,22 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 //! this route only for admin
-const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
+const deleteAVendor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userID = req.params.id;
-    const deletedUser = await UserService.deleteAUserInToDB(userID);
-    if (!deletedUser) {
+    const deletedVendor = await VendorService.deleteAVendorInToDB(userID);
+    if (!deletedVendor) {
       return res.status(404).json({
         success: false,
         statusCode: 404,
-        message: 'User not found.',
+        message: 'Vendor not found.',
       });
     }
     return res.status(200).json({
       success: true,
       statusCode: 200,
       message: 'USER deleted successfully!',
-      data: deletedUser,
+      data: deletedVendor,
     });
   } catch (error: any) {
     next(error);
@@ -277,9 +270,9 @@ const deleteAUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const VendorController = {
-  getAllUsers,
-  createUser,
-  getAUser,
-  updateAUser,
-  deleteAUser,
+  getAllVendors,
+  createVendor,
+  getAVendor,
+  updateAVendor,
+  deleteAVendor,
 };
