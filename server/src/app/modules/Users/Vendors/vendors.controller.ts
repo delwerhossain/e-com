@@ -63,7 +63,7 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
       sortOrder = 'desc',
       businessName,
       email,
-      contactPhone,
+      number,
       businessCategory,
       isActive,
       ratingsFrom,
@@ -84,8 +84,8 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
     const filter: any = {};
     if (role) filter.role = role;
     if (businessName) filter['profile.businessName'] = new RegExp(businessName as string, 'i');
-    if (email) filter['profile.contactInfo.contactEmail'] = new RegExp(email as string, 'i');
-    if (contactPhone) filter['profile.contactInfo.contactPhone'] = new RegExp(contactPhone as string, 'i');
+    if (email) filter['profile.email'] = new RegExp(email as string, 'i');
+    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
     if (businessCategory) filter['profile.businessCategoryID'] = businessCategory;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
 
