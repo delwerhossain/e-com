@@ -14,6 +14,10 @@ const ReviewSchema = new Schema<IReviews>(
       required: [true, 'Rating is required'],
       min: [1, 'Rating must be at least 1'],
       max: [5, 'Rating cannot exceed 5'],
+      set: (value: number) => {
+        // Round the value to the nearest tenth (e.g., 4.5566544 => 4.6)
+        return Math.round(value * 10) / 10;
+      },
     },
     comment: {
       type: String,

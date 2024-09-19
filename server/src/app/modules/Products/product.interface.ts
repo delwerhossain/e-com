@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { IReviews } from '../Reviews/reviews.interface';
 export interface IProduct {
   name: string;
   description: string;
