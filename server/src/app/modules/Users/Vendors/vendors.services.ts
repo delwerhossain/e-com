@@ -113,10 +113,11 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
 
 
 //! this route only for admin
-const deleteAVendorInToDB = async (id: string) => {
+const deleteAVendorInToDB = async (id: string, isAdmin: boolean) => {
   try {
-    // Use findByIdAndUpdate to directly search and update the vendor
-    const deletedVendor = await UserModel.findByIdAndUpdate(
+   if (isAdmin) {
+     // Use findByIdAndUpdate to directly search and update the vendor
+     const deletedVendor = await UserModel.findByIdAndUpdate(
       id,
       { $set: { isDelete: true } }, // Mark as deleted (true)
       { new: true },
@@ -124,11 +125,15 @@ const deleteAVendorInToDB = async (id: string) => {
 
     // If vendor not found, return null or throw an error
     if (!deletedVendor) {
-      return null;
+      throw new Error('Admin not found');
     }
 
     // Return the updated vendor
     return deletedVendor;
+   }
+   else {
+     throw new Error('permission denied');
+   }
   } catch (error) {
     throw new Error('Failed to update vendor deletion status');
   }

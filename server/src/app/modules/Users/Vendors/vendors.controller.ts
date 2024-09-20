@@ -250,7 +250,10 @@ const updateAVendor = async (req: Request, res: Response, next: NextFunction) =>
 const deleteAVendor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userID = req.params.id;
-    const deletedVendor = await VendorService.deleteAVendorInToDB(userID);
+    //! todo get from JWT + middleware isAdmin
+    const isAdmin = true;
+
+    const deletedVendor = await VendorService.deleteAVendorInToDB(userID, isAdmin);
     if (!deletedVendor) {
       return res.status(404).json({
         success: false,
