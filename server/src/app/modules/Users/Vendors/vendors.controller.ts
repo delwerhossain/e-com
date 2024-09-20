@@ -72,7 +72,7 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
       reviewCountTo,
       createdFrom,
       createdTo,
-      showDeleted = false,
+       isDeleted = false,
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
@@ -115,7 +115,7 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
 
     // Only admins can see deleted vendors
     const isAdmin = req.vendor?.isAdmin || false;
-    if (!isAdmin || showDeleted === 'false') {
+    if (!isAdmin || isDeleted === 'false') {
       filter.isDelete = { $ne: true };
     }
 
