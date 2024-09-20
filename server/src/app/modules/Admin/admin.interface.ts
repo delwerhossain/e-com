@@ -23,7 +23,7 @@ export interface IAdmin extends Document {
   isActive?: boolean;
   lastLogin?: ILoginDetails;
   profile?: IAdminProfile;
-  permissions: Array<
+  permissions?: Array<
     | 'manageUsers'
     | 'viewReports'
     | 'manageProducts'
