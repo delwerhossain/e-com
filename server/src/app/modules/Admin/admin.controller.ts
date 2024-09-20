@@ -4,7 +4,7 @@ import { AdminServices } from './admin.services';
 import sendResponse from '../../../shared/sendResponse';
 import httpStatus from 'http-status';
 import config from '../../config';
-import { IAdmin } from './admin.interface';
+import { IAdmin, ICreateAdminInput } from './admin.interface';
 import bcrypt from 'bcrypt';
 import { AdminValidation } from './admin.validation';
 
@@ -124,9 +124,8 @@ const createAdmin: RequestHandler = catchAsync(
     // Hash the password with correct salt rounds
     const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
 
-    // Create the vendor object
-    //! todo need to fix type issue 
-    const data: IAdmin = {
+    // Create the vendor object 
+    const data: ICreateAdminInput = {
       email,
       emailVerified: emailVerified ?? false, // Default to false if not provided
       passwordHash: hashedPassword,

@@ -36,6 +36,17 @@ export interface IAdmin extends Document {
   >;
 }
 
+// Define a new interface for creating an admin
+export interface ICreateAdminInput {
+  email: string;
+  emailVerified?: boolean;
+  passwordHash: string;
+  role: 'superAdmin' | 'admin';
+  isActive?: boolean;
+  profile?: IAdminProfile;
+  permissions?: IAdmin['permissions'];
+}
+
 // Define the AdminAction interface
 export interface IAdminAction extends Document {
   adminId: Types.ObjectId; // Reference to the admin being created
