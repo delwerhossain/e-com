@@ -34,7 +34,7 @@ const createReview = async (review: IReviews) => {
       averageRating: setAverageRating, // Ensure only 2 decimal places are saved
       reviewsCount: activeReviews.length,
     };
-
+    product.reviews?.push(newReview._id);
     await product.save(); // Save the updated product details
 
     return newReview;
@@ -46,12 +46,12 @@ const createReview = async (review: IReviews) => {
 
 // Function to fetch active reviews for a specific product
 const getProductReviews = async (productId: Types.ObjectId) => {
-  console.log(productId);
+  // console.log(productId);
   const result = await ReviewsModel.find({
     isActive: true,
     productId: productId, // Query by ObjectId
   });
-  console.log(result);
+  // console.log(result);
   return result; // Return the array directly, even if it's empty
 };
 // Function to fetch best reviews

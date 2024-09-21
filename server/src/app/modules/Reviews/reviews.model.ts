@@ -2,7 +2,7 @@ import { Schema, model, Types } from 'mongoose';
 import { IReviews } from './reviews.interface';
 
 // Reviews Schema Definition
-const ReviewSchema = new Schema<IReviews>(
+export const ReviewSchema = new Schema<IReviews>(
   {
     reviewerId: {
       type: Schema.Types.ObjectId,

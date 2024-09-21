@@ -119,7 +119,7 @@ const isActiveReview: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params; // Extract review ID from route params
     const { isActive } = req.body; // Extract the new active status from the request body
-    console.log(isActive)
+    // console.log(isActive)
     if(!isActive){
       throw new Error('Status Not found')
     }

@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IProduct } from './product.interface';
+import { ReviewSchema } from '../Reviews/reviews.model';
 
 // Product schema definition
 const productSchema = new Schema<IProduct>(
@@ -25,7 +26,7 @@ const productSchema = new Schema<IProduct>(
     isDeleted: { type: Boolean, default: false },
     isBestProduct: { type: Boolean, default: false },
 
-    // Ratings embedded as a subdocument
+    // Ratings embedded as a subdocuments
     ratings: {
       averageRating: { type: Number, default: 0, min: 0, max: 5 },
       reviewsCount: { type: Number, default: 0 },
@@ -33,28 +34,10 @@ const productSchema = new Schema<IProduct>(
 
     // Optional reviews field as an array of subdocuments referencing IReviews
     reviews: {
-      type: [
-        {
-          reviewerId: {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-          },
-          rating: { type: Number, required: true, min: 1, max: 5 },
-          comment: { type: String },
-          productId: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true,
-          },
-          isDeleted: { type: Boolean, default: false },
-          isActive: { type: Boolean, default: true },
-          isBest: { type: Boolean, default: false },
-        },
-      ],
-      default: [], // Set default to an empty array
+      type: [{ type: Schema.Types.ObjectId, ref: 'Reviews' }],
+      default: [],
     },
-
+    
     // Discount and pricing fields
     discountPercentage: { type: Number, default: 0 }, // Default discount 0%
     discountedPrice: { type: Number }, // Calculated discounted price (can be handled in business logic)
