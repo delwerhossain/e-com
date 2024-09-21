@@ -1,5 +1,3 @@
-import { Types } from 'mongoose';
-import { ReviewServices } from '../Reviews/reviews.services';
 import { IProduct } from './product.interface';
 import { ProductModel } from './product.model';
 
@@ -17,7 +15,7 @@ const getSingleProduct = async (id: string) => {
   if (!result) {
     return { not_found: 'Product Not Found' };
   }
-  console.log(result, 'line 28');
+  // console.log(result, 'line 28');
   return result;
 };
 
