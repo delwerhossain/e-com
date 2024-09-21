@@ -2,73 +2,8 @@ import { IUser } from "../users.interface";
 import { UserModel } from "../users.model";
 
 
-const createUserInToDB = async (data: any) => {
-  try {
-    // Create the user in the database
-    const result = await UserModel.create(data);
-    return result;
-  } catch (error: any) {
-    // Handle duplicate email error
-    if (error.code === 11000 && error.keyValue?.email) {
-      throw new Error('Email already exists');
-    }
-    throw error;
-  }
-};
-
-
-const getAUserInToDB = async (id: string, email: string) => {
-  const searchCriteria: any = {};
-
-  // Add search criteria based on provided query
-  if (id) {
-    searchCriteria._id = id;
-  } else if (email) {
-    searchCriteria.email = email;
-  }
-// if user isDeleted is true then it will not be displayed
-
-  // Find the user by either ID or email, excluding the password hash and other sensitive fields
-  const result = await UserModel.findOne(searchCriteria).select(
-    '-passwordHash -isDelete -isActive -__v -createdAt -updatedAt',
-  );
-  return result;
-};
-const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
-  try {
-    // Exclude fields that should not be updated
-    const sensitiveFields = [
-      'role',
-      'isActive',
-      'isDelete',
-      'createdAt',
-      'updatedAt',
-    ];
-
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([key]) => !sensitiveFields.includes(key)),
-    );
-
-    // Find and update the user //! For updateOne we can user email if we use  findByOneAndUpdate
-  // Perform the update
-  const updatedUser = await UserModel.findByIdAndUpdate(
-    id,
-    { $set: updateData },
-    { new: true, runValidators: true, select: '-passwordHash -role -isDelete -createdAt -updatedAt' } // Exclude sensitive fields
-  );
-
-    // Return null if the user is not found
-    if (!updatedUser) {
-      throw new Error('User not found');
-    }
-
-    return updatedUser;
-  } catch (error) {
-    throw error; // Re-throw the error to be handled by the controller
-  }
-};
 //! this route only for admin
-const getAllUsersInToDB = async (
+const getAllVendorsInToDB = async (
   filter: any,
   sort: any,
   page: number,
@@ -86,8 +21,8 @@ const getAllUsersInToDB = async (
     {
       $project: {
         passwordHash: 0,
-        // isDelete: 0, // Hide isDelete if not admin
-        // ...(options.isAdmin ? {} : { isDelete: { $ne: true } }), // Allow deleted users only for admin
+        // Hide isDelete field if the requester is not an admin
+        ...(options.isAdmin ? {} : { isDelete: 0 }),
       },
     },
   ];
@@ -102,32 +37,107 @@ const getAllUsersInToDB = async (
   return { data: result, total };
 };
 
-//! this route only for admin
-const deleteAUserInToDB = async (id: string) => {
+
+const createVendorInToDB = async (data: any) => {
   try {
-    // Use findByIdAndUpdate to directly search and update the user
-    const deletedUser = await UserModel.findByIdAndUpdate(
+    // Create the vendor in the database
+    const createData = await UserModel.create(data);
+    
+    const result = {
+      email: createData.email,
+      emailVerified: createData.emailVerified,
+      phoneNumber: createData?.phoneNumber
+    }
+    return result;
+  } catch (error: any) {
+    // Handle duplicate email error
+    if (error.code === 11000 && error.keyValue?.email) {
+      throw new Error('Email already exists');
+    }
+    throw error;
+  }
+};
+
+
+
+const getAVendorInToDB = async (id: string, email: string) => {
+  const searchCriteria: any = {};
+
+  // Add search criteria based on provided query
+  if (id) {
+    searchCriteria._id = id;
+  } else if (email) {
+    searchCriteria.email = email;
+  }
+// if vendor isDeleted is true then it will not be displayed
+
+  // Find the vendor by either ID or email, excluding the password hash and other sensitive fields
+  const result = await UserModel.findOne(searchCriteria).select(
+    '-passwordHash -isDelete -isActive -__v -createdAt -updatedAt',
+  );
+  return result;
+};
+const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
+  try {
+    // Exclude fields that should not be updated
+    const sensitiveFields = [
+      'role',
+      'isActive',
+      'isDelete',
+      'createdAt',
+      'updatedAt',
+    ];
+
+    const updateData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => !sensitiveFields.includes(key)),
+    );
+
+    // Find and update the vendor //! For updateOne we can vendor email if we use  findByOneAndUpdate
+  // Perform the update
+  const updatedVendor = await UserModel.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true, runValidators: true, select: '-passwordHash -role -isDelete -createdAt -updatedAt' } // Exclude sensitive fields
+  );
+
+    // Return null if the vendor is not found
+    if (!updatedVendor) {
+      throw new Error('Vendor not found');
+    }
+
+    return updatedVendor;
+  } catch (error) {
+    throw error; // Re-throw the error to be handled by the controller
+  }
+};
+
+
+//! this route only for admin
+const deleteAVendorInToDB = async (id: string) => {
+  try {
+    // Use findByIdAndUpdate to directly search and update the vendor
+    const deletedVendor = await UserModel.findByIdAndUpdate(
       id,
       { $set: { isDelete: true } }, // Mark as deleted (true)
       { new: true },
     );
 
-    // If user not found, return null or throw an error
-    if (!deletedUser) {
+    // If vendor not found, return null or throw an error
+    if (!deletedVendor) {
       return null;
     }
 
-    // Return the updated user
-    return deletedUser;
+    // Return the updated vendor
+    return deletedVendor;
   } catch (error) {
-    throw new Error('Failed to update user deletion status');
+    throw new Error('Failed to update vendor deletion status');
   }
 };
 
-export const UserService = {
-  createUserInToDB,
-  getAUserInToDB,
-  updateAUserInToDB,
-  getAllUsersInToDB,
-  deleteAUserInToDB,
+export const VendorService = {
+  createVendorInToDB,
+  getAVendorInToDB,
+  updateAVendorInToDB,
+  getAllVendorsInToDB,
+  deleteAVendorInToDB,
 };

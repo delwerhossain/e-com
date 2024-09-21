@@ -25,7 +25,6 @@ export interface ICommunicationPreferences {
 // User Profile Interface
 export interface IUserProfile {
   name: string;
-  phoneNumber: string;
   avatarUrl?: string;
   shippingAddress?: IAddress;
   billingAddress?: IAddress;
@@ -52,7 +51,7 @@ export interface IVendorProfile {
   taxId?: string;
   contactInfo?: {
     contactEmail?: string;
-    contactPhone?: string;
+    publicPhone?: string;
     contactAddress?: IAddress;
   };
 }
@@ -60,6 +59,7 @@ export interface IVendorProfile {
 // User Interface
 export interface IUser {
   email: string;
+  phoneNumber?: string;
   emailVerified?: boolean;
   passwordHash: string;
   role: 'user' | 'vendor';
