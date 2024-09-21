@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', ReviewController.getALLReviews); // Get all reviews
 router.get('/best', ReviewController.bestReviews); // Get all best reviews
 router.get('/:id', ReviewController.getAReview); // Get a specific review by ID
+router.get('/all/inactive', ReviewController.getALLInActiveReviews);
 router.get('/product/:productId', ReviewController.getProductReviews); // Get all active reviews for a specific product
 router.get('/inactive/:productId', ReviewController.getInActiveReviews); // Get all inactive reviews for a specific product
 router.post('/', ReviewController.createReview); // Create a new review

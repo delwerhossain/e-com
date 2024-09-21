@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export interface IReviews {
+ export interface IReviews {
     reviewerId : Types.ObjectId;
     rating:number;
     comment?:string;

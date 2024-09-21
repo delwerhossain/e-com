@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { IReviews } from '../Reviews/reviews.interface';
 export interface IProduct {
   name: string;
   description: string;
@@ -17,5 +16,9 @@ export interface IProduct {
     averageRating?: number;
     reviewsCount?: number;
   };
-  reviews?: IReviews[];
+  reviews?: Types.ObjectId[];
+  discountPercentage?: number; // Discount percentage for sale items
+  discountedPrice?: number;
+  outOfStock?: boolean;
+  weight: string;
 }
