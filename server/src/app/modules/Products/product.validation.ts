@@ -9,20 +9,6 @@ const objectIdSchema = z
   })
   .transform(val => new mongoose.Types.ObjectId(val));
 
-// Zod schema for IReviews
-const reviewsSchema = z.object({
-  reviewerId: objectIdSchema,
-  rating: z
-    .number()
-    .min(1, { message: 'Rating must be at least 1' })
-    .max(5, { message: 'Rating cannot exceed 5' }),
-  comment: z.string().optional(),
-  productId: objectIdSchema,
-  isDeleted: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  isBest: z.boolean().optional(),
-});
-
 // Zod schema for IProduct
 export const ProductValidation = z.object({
   name: z.string().min(1, { message: 'Product Name is required' }),
@@ -48,25 +34,30 @@ export const ProductValidation = z.object({
     })
     .optional(),
 
-  // Reviews validation
-  reviews: z
-    .union([z.array(objectIdSchema), z.array(reviewsSchema)])
-    .optional(),
+  reviews: z.array(objectIdSchema).optional(),
 
   // Discount and stock management
-  discountPercentage: z.number().min(0).max(100).optional(), // Discount percentage (0-100%)
-  discountedPrice: z.number().min(0).optional(), // Price after discount
-  outOfStock: z.boolean().default(false), // Out-of-stock flag
+  discountPercentage: z.number().min(0).max(100).optional(),
+  discountedPrice: z.number().min(0).optional(),
+  outOfStock: z.boolean().default(false),
 
-  // Delivery and stock fields
-  delivery: z.enum(['Free', 'Pay']).optional(), // Delivery type validation
-  deliveryCharge: z.number().min(0).optional(), // Delivery charge if applicable
-  restockDate: z.string().optional(), // Expected restock date
+  // Delivery and restock logic
+  delivery: z.enum(['Free', 'Pay']).default('Pay'),
+  deliveryCharge: z.number().min(0).optional(), // Mark as optional first
+
+  restockDate: z.string().optional(),
 
   // Shipping and size management
-  weight: z.string().optional(),
-  size: z.string().optional(), // Optional size field
-
-  // Maximum order quantity
-  maxOrderQuantity: z.number().min(1).optional(), // Maximum order quantity validation
+  weight: z.string().min(1, { message: 'Weight is required' }).optional(),
+  size: z.string().optional(),
+  maxOrderQuantity: z.number().min(1).optional(),
+}).superRefine((data, ctx) => {
+  // Conditional validation for deliveryCharge
+  if (data.delivery === 'Pay' && data.deliveryCharge === undefined) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Delivery charge is required when delivery is Pay',
+      path: ['deliveryCharge'],
+    });
+  }
 });

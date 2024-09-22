@@ -108,7 +108,20 @@ const productSchema = new Schema<IProduct>(
 
     // Delivery-related fields
     delivery: { type: String, enum: ['Free', 'Pay'], default: 'Pay' },
-    deliveryCharge: { type: Number, default: 0 }, // Charge for paid delivery
+    deliveryCharge: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: function (value: number) {
+          // Only validate deliveryCharge when delivery is 'Pay'
+          if (this.delivery === 'Pay' && (!value || value <= 0)) {
+            return false;
+          }
+          return true;
+        },
+        message: 'Delivery charge is required when delivery is Pay',
+      },
+    },
 
     // Product weight for shipping calculations
     weight: { type: String },
