@@ -31,8 +31,10 @@ export const ProductValidation = z.object({
   quantity: z.number().min(1, { message: 'Quantity must be at least 1' }),
   vendorId: objectIdSchema,
   subCategoryId: objectIdSchema.optional(),
+  categoryId: objectIdSchema.optional(),
   images: z.union([z.array(z.string()), z.string()]),
 
+  color: z.string().optional(),
   isFeatured: z.boolean().default(false),
   isActive: z.boolean().default(true),
   isDeleted: z.boolean().default(false),
@@ -46,13 +48,25 @@ export const ProductValidation = z.object({
     })
     .optional(),
 
-  // Optional reviews field validation
-  reviews:
-    z.array(objectIdSchema).optional() || z.array(reviewsSchema).optional(),
+  // Reviews validation
+  reviews: z
+    .union([z.array(objectIdSchema), z.array(reviewsSchema)])
+    .optional(),
 
-  // New fields added
-  discountPercentage: z.number().min(0).max(100).optional(), // Discount percentage validation (0-100%)
+  // Discount and stock management
+  discountPercentage: z.number().min(0).max(100).optional(), // Discount percentage (0-100%)
   discountedPrice: z.number().min(0).optional(), // Price after discount
-  outOfStock: z.boolean().default(false), // Out of stock flag
-  weight: z.string().min(1, { message: 'Weight is required' }), // Weight validation
+  outOfStock: z.boolean().default(false), // Out-of-stock flag
+
+  // Delivery and stock fields
+  delivery: z.enum(['Free', 'Pay']).optional(), // Delivery type validation
+  deliveryCharge: z.number().min(0).optional(), // Delivery charge if applicable
+  restockDate: z.string().optional(), // Expected restock date
+
+  // Shipping and size management
+  weight: z.string().optional(),
+  size: z.string().optional(), // Optional size field
+
+  // Maximum order quantity
+  maxOrderQuantity: z.number().min(1).optional(), // Maximum order quantity validation
 });

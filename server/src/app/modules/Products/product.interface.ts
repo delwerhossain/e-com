@@ -3,9 +3,11 @@ export interface IProduct {
   name: string;
   description: string;
   price: number;
+  color?: string;
   quantity: number;
   vendorId: Types.ObjectId;
   subCategoryId?: Types.ObjectId;
+  categoryId?: Types.ObjectId;
   images: string[] | string;
   isFeatured?: boolean;
   isActive?: boolean;
@@ -20,5 +22,10 @@ export interface IProduct {
   discountPercentage?: number; // Discount percentage for sale items
   discountedPrice?: number;
   outOfStock?: boolean;
-  weight: string;
+  delivery?: 'Free' | 'Pay';
+  deliveryCharge?: number;
+  restockDate?: string; // Expected restock date for out-of-stock products
+  weight?: string;
+  size?: string;
+  maxOrderQuantity?: number; // Maximum order quantity allowed
 }
