@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { IUser } from './users.interface';
 import { UserValidation } from './users.validation';
 import { UserService } from './users.services';
-import { passwordHashing } from '../../../shared/passHandle';
+import { passwordHashing } from '../../../helpers/passHandle';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -70,8 +70,10 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       createdTo,
       lastLoginFrom,
       lastLoginTo,
-      showDeleted = false,
+      isDelete,
     } = req.query;
+    // todo : need to use JWT for validation  admin
+    const isAdmin = true;
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
@@ -113,10 +115,11 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       };
     }
 
-    //! todo => check if user is admin , need to use jwt token
-    const isAdmin = req.user?.isAdmin || false;
-    if (!isAdmin || showDeleted === 'false') {
+    if (isDelete == 'false') {
       filter.isDelete = { $ne: true };
+    }
+    if (isDelete == 'true') {
+      filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};

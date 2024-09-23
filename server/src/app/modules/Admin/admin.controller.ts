@@ -1,15 +1,17 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { Request, RequestHandler, Response } from 'express';
 import catchAsync from '../../../shared/catchAsync';
 import { AdminServices } from './admin.services';
 import sendResponse from '../../../shared/sendResponse';
 import httpStatus from 'http-status';
 import config from '../../config';
 import { IAdmin, ICreateAdminInput } from './admin.interface';
-import bcrypt from 'bcrypt';
 import { AdminValidation } from './admin.validation';
+import { passwordHashing } from '../../../helpers/passHandle';
+import mongoose from 'mongoose';
+import { isValidEmail } from '../../../helpers/validation';
 
 const getAllAdmins: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const {
       page = '1',
       limit = '10',
@@ -20,7 +22,7 @@ const getAllAdmins: RequestHandler = catchAsync(
       isActive,
       createdFrom,
       createdTo,
-      isDeleted = false,
+      isDelete ,
     } = req.query;
     //
     const pageNumber = parseInt(page as string, 10);
@@ -37,8 +39,11 @@ const getAllAdmins: RequestHandler = catchAsync(
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-    if (isDeleted === 'false') {
+    if (isDelete == "false") {
       filter.isDelete = { $ne: true };
+    }
+    if (isDelete == "true") {
+      filter.isDelete = { $ne: false };
     }
 
     // sorting filter
@@ -72,38 +77,52 @@ const getAllAdmins: RequestHandler = catchAsync(
     });
   },
 );
-
-// get a single admin details
 const getAdmin: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const { id, email } = req.query;
 
-    // Ensure at least one of id or email is provided
-    if (!id && !email) {
+    // Validate input: require either id or email, and ensure formats are correct
+    if (!(id || email)) {
       return sendResponse(res, {
         statusCode: 400,
         success: false,
         message:
-          'Please provide either an ID or an email to search for a admin.',
+          'Please provide either an ID or an email to search for an admin.',
       });
     }
 
-    // Fetch the admin from the database using either ID or email
+    if (id && !mongoose.isValidObjectId(id as string)) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Invalid admin ID format provided.',
+      });
+    }
+
+    if (email && !isValidEmail(email as string)) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Invalid email format provided.',
+      });
+    }
+
+    // Fetch admin by id or email
     const result = await AdminServices.getAdminInToDB(
       id as string,
       email as string,
     );
 
-    // If the admin is not found, return a 404 response
+    // If admin not found, return a 404 response
     if (!result) {
       return sendResponse(res, {
         statusCode: 404,
         success: false,
-        message: 'Admin not found',
+        message: 'Admin not found.',
       });
     }
 
-    // If the admin is found, return the safe admin information with a 200 status
+    // Return the found admin with a success response
     return sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -114,23 +133,19 @@ const getAdmin: RequestHandler = catchAsync(
 );
 
 const createAdmin: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email, passwordHash ,emailVerified, phoneNumber} = req.body;
+  async (req: Request, res: Response) => {
+    const { email, emailVerified, permissions } = req.body;
 
-    //! todo => salt rounds value
-    // Parse salt rounds with a fallback to default value if parsing fails
-    const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+    const default_pass = config.default_pass as string;
+    const hashedPassword = await passwordHashing(default_pass);
 
-    // Hash the password with correct salt rounds
-    const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
-
-    // Create the vendor object 
+    // Create the vendor object
     const data: ICreateAdminInput = {
       email,
       emailVerified: emailVerified ?? false, // Default to false if not provided
       passwordHash: hashedPassword,
       role: 'admin',
-      isActive: false,
+      permissions: permissions ?? [],
     };
 
     // Validate the vendor data with Zod
@@ -140,10 +155,13 @@ const createAdmin: RequestHandler = catchAsync(
     const result = await AdminServices.createAdminInToDB(validatedData);
 
     // Return the created vendor, excluding sensitive information like password
-    res.status(201).json({
-      success: true,
+
+    // If the admin is found, return the safe admin information with a 200 status
+    return sendResponse(res, {
       statusCode: 201,
-      vendor: {
+      success: true,
+      message: 'Admin retrieved successfully',
+      data: {
         email: result.email,
         emailVerified: result.emailVerified,
       },
@@ -152,12 +170,64 @@ const createAdmin: RequestHandler = catchAsync(
 );
 
 const updateAdmin: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { email, emailVerified, profile } = req.body;
+
+    // todo need to use JWT for validation super admin
+    const isSuperAdmin = true;
+
+    const data: Partial<IAdmin> = {
+      email,
+      emailVerified,
+      profile,
+    };
+
+    // Check if no data is provided
+    const isEmptyData = Object.keys(data).every(
+      key => data[key as keyof Partial<IAdmin>] === undefined,
+    );
+
+    if (isEmptyData) {
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'No valid data provided to update',
+      });
+    }
+
+    // Validate the update data using Zod
+    const validatedData = AdminValidation.adminUpdateValidation.parse(data);
+
+    // Update the admin in the database
+    const result = await AdminServices.updateAdminInDB(
+      id,
+      validatedData,
+      isSuperAdmin,
+    );
+
+    return sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Admin updated successfully',
+      data: result,
+    });
+  },
 );
 
-const deleteAdmin: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
-);
+const deleteAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  // todo need to use JWT for validation super admin
+  const isSuperAdmin = true;
+  const result = await AdminServices.deleteAdminInDB(id, isSuperAdmin);
+
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Admin deleted successfully',
+    data: result,
+  });
+});
 
 export const AdminController = {
   getAllAdmins,

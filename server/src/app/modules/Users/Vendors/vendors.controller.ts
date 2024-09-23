@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import config from '../../../config';
 import { IUser } from '../users.interface';
 import { VendorService } from './vendors.services';
 import { UserValidation } from '../users.validation';
 import sendResponse from '../../../../shared/sendResponse';
-import { passwordHashing } from '../../../../shared/passHandle';
+import { passwordHashing } from '../../../../helpers/passHandle';
 
 const createVendor = async (
   req: Request,
@@ -15,12 +13,8 @@ const createVendor = async (
   try {
     const { email, passwordHash, emailVerified, phoneNumber } = req.body;
 
-    //! todo => salt rounds value
-    // Parse salt rounds with a fallback to default value if parsing fails
-    const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
-
     // Hash the password with correct salt rounds
-    const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
+    const hashedPassword = await passwordHashing(passwordHash);
 
     // Create the vendor object
     const data: IUser = {
@@ -82,7 +76,7 @@ const getAllVendors = async (
       reviewCountTo,
       createdFrom,
       createdTo,
-      isDeleted = false,
+      isDelete
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
@@ -90,6 +84,8 @@ const getAllVendors = async (
 
     // Only search for vendors
     const role = 'vendor';
+    // todo : need to use JWT for validation  admin
+    const isAdmin = true;
 
     const filter: any = {};
     if (role) filter.role = role;
@@ -127,11 +123,11 @@ const getAllVendors = async (
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-
-    // Only admins can see deleted vendors
-    const isAdmin = req.vendor?.isAdmin || false;
-    if (!isAdmin || isDeleted === 'false') {
+    if (isDelete == "false") {
       filter.isDelete = { $ne: true };
+    }
+    if (isDelete == "true") {
+      filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};
