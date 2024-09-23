@@ -1,5 +1,13 @@
+import { checkForSensitiveFieldUpdate } from '../../../helpers/validation';
 import { IAdmin } from './admin.interface';
 import { AdminModel } from './admin.model';
+
+const buildSearchCriteria = (id?: string, email?: string) => {
+  const searchCriteria: any = {};
+  if (id) searchCriteria._id = id;
+  if (email) searchCriteria.email = new RegExp(email, 'i');
+  return searchCriteria;
+};
 
 const getAllAdminInToDB = async (
   filter: any,
@@ -35,24 +43,19 @@ const getAllAdminInToDB = async (
 };
 const getAdminInToDB = async (id: string, email: string) => {
   try {
-    const searchCriteria: any = {};
-
-    // Add search criteria based on provided query
-    if (id) {
-      searchCriteria._id = id;
-    } else if (email) {
-      searchCriteria.email = email;
-    }
-
-    // Find the admin by either ID or email, excluding the password hash and other sensitive fields
+    const searchCriteria = buildSearchCriteria(id, email);
     const result = await AdminModel.findOne(searchCriteria).select(
       '-passwordHash -isDelete -isActive -__v -createdAt -updatedAt',
     );
+    if (!result) {
+      throw new Error('Admin not found');
+    }
     return result;
-  } catch (error) {
-    throw error;
+  } catch (error: any) {
+    throw new Error(`Error retrieving admin`);
   }
 };
+
 
 // create only admin, //! not superAdmin
 const createAdminInToDB = async (payload: any) => {
@@ -62,6 +65,7 @@ const createAdminInToDB = async (payload: any) => {
     const result = {
       email: createAdmin.email,
       emailVerified: createAdmin.emailVerified,
+      permissions: createAdmin.permissions,
     };
 
     return result;
@@ -74,21 +78,19 @@ const createAdminInToDB = async (payload: any) => {
   }
 };
 
-const updateAdminInDB = async (id: string, data: Partial<IAdmin>) => {
+const updateAdminInDB = async (id: string, data: Partial<IAdmin>, isSuperAdmin: boolean) => {
   try {
-    let sensitiveFields: any[] = [];
-    let sensitiveFieldShow;
-    // if role is superAdmin then sensitive fields show and update , else if role is admin then sensitive fields not show and update
-    if (data?.role === 'admin') {
-      sensitiveFields = [
-        'role',
-        'isActive',
-        'isDelete',
-        'createdAt',
-        'updatedAt',
-      ];
-      sensitiveFieldShow =
-        '-passwordHash -role -isDelete -createdAt -updatedAt';
+    const sensitiveFields = [
+      'role',
+      'isActive',
+      'isDelete',
+      'createdAt',
+      'updatedAt',
+    ];
+
+    // If not a super admin, check for sensitive field updates
+    if (!isSuperAdmin) {
+      checkForSensitiveFieldUpdate(data, sensitiveFields);
     }
 
     const updateData = Object.fromEntries(
@@ -99,8 +101,9 @@ const updateAdminInDB = async (id: string, data: Partial<IAdmin>) => {
     const updateAdmin = await AdminModel.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true, runValidators: true, select: sensitiveFieldShow },
+      { new: true, runValidators: true, select: '-passwordHash -isDelete -createdAt -updatedAt' },
     );
+
     if (!updateAdmin) {
       throw new Error('Admin not found');
     }
@@ -110,6 +113,7 @@ const updateAdminInDB = async (id: string, data: Partial<IAdmin>) => {
     throw error;
   }
 };
+
 const deleteAdminInDB = async (id: string, isSuperAdmin: boolean) => {
   try {
     if (isSuperAdmin) {

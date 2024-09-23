@@ -32,7 +32,7 @@ export const AdminValidationSchema = z.object({
   isDelete: z.boolean().default(false),
   isActive: z.boolean().default(true),
   lastLogin: LoginSchema.optional(),
-  profile: AdminProfileSchema,
+  profile: AdminProfileSchema.optional(),
   permissions: z
     .array(
       z.enum([

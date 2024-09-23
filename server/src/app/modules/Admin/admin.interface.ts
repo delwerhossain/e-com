@@ -43,8 +43,7 @@ export interface ICreateAdminInput {
   passwordHash: string;
   role: 'superAdmin' | 'admin';
   isActive?: boolean;
-  profile?: IAdminProfile;
-  permissions?: IAdmin['permissions'];
+  permissions: IAdmin['permissions'];
 }
 
 // Define the AdminAction interface

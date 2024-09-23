@@ -43,7 +43,7 @@ const AdminSchema = new Schema<IAdmin>(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     lastLogin: LoginSchema,
     profile: AdminProfileSchema,
