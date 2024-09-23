@@ -1,6 +1,5 @@
-import { IUser } from "../users.interface";
-import { UserModel } from "../users.model";
-
+import { IUser } from '../users.interface';
+import { UserModel } from '../users.model';
 
 //! this route only for admin
 const getAllVendorsInToDB = async (
@@ -8,16 +7,16 @@ const getAllVendorsInToDB = async (
   sort: any,
   page: number,
   limit: number,
-  options: { isAdmin: boolean }
+  options: { isAdmin: boolean },
 ) => {
   const skip = (page - 1) * limit;
 
   // Aggregation pipeline to optimize filtering and search
   const aggregationPipeline = [
-    { $match: filter },  // Apply the filters
-    { $sort: sort },     // Sort results
-    { $skip: skip },     // Pagination skip
-    { $limit: limit },   // Pagination limit
+    { $match: filter }, // Apply the filters
+    { $sort: sort }, // Sort results
+    { $skip: skip }, // Pagination skip
+    { $limit: limit }, // Pagination limit
     {
       $project: {
         passwordHash: 0,
@@ -28,7 +27,9 @@ const getAllVendorsInToDB = async (
   ];
 
   // Execute the aggregation pipeline
-  const result = await UserModel.aggregate(aggregationPipeline, { allowDiskUse: true });
+  const result = await UserModel.aggregate(aggregationPipeline, {
+    allowDiskUse: true,
+  });
 
   // Get the total count of documents matching the filter
   const total = await UserModel.countDocuments(filter);
@@ -37,17 +38,16 @@ const getAllVendorsInToDB = async (
   return { data: result, total };
 };
 
-
 const createVendorInToDB = async (data: any) => {
   try {
     // Create the vendor in the database
     const createData = await UserModel.create(data);
-    
+
     const result = {
       email: createData.email,
       emailVerified: createData.emailVerified,
-      phoneNumber: createData?.phoneNumber
-    }
+      phoneNumber: createData?.phoneNumber,
+    };
     return result;
   } catch (error: any) {
     // Handle duplicate email error
@@ -58,8 +58,6 @@ const createVendorInToDB = async (data: any) => {
   }
 };
 
-
-
 const getAVendorInToDB = async (id: string, email: string) => {
   const searchCriteria: any = {};
 
@@ -69,7 +67,7 @@ const getAVendorInToDB = async (id: string, email: string) => {
   } else if (email) {
     searchCriteria.email = email;
   }
-// if vendor isDeleted is true then it will not be displayed
+  // if vendor isDeleted is true then it will not be displayed
 
   // Find the vendor by either ID or email, excluding the password hash and other sensitive fields
   const result = await UserModel.findOne(searchCriteria).select(
@@ -86,6 +84,7 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
       'isDelete',
       'createdAt',
       'updatedAt',
+      'lastLogin',
     ];
 
     const updateData = Object.fromEntries(
@@ -93,12 +92,16 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
     );
 
     // Find and update the vendor //! For updateOne we can vendor email if we use  findByOneAndUpdate
-  // Perform the update
-  const updatedVendor = await UserModel.findByIdAndUpdate(
-    id,
-    { $set: updateData },
-    { new: true, runValidators: true, select: '-passwordHash -role -isDelete -createdAt -updatedAt' } // Exclude sensitive fields
-  );
+    // Perform the update
+    const updatedVendor = await UserModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true,
+        select: '-passwordHash -role -isDelete -createdAt -updatedAt',
+      }, // Exclude sensitive fields
+    );
 
     // Return null if the vendor is not found
     if (!updatedVendor) {
@@ -111,38 +114,58 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
   }
 };
 
-
 //! this route only for admin
 const deleteAVendorInToDB = async (id: string, isAdmin: boolean) => {
   try {
-   if (isAdmin) {
-     // Use findByIdAndUpdate to directly search and update the vendor
-     const deletedVendor = await UserModel.findByIdAndUpdate(
-      id,
-      { $set: { isDelete: true } }, // Mark as deleted (true)
-      { new: true },
-    );
+    if (isAdmin) {
+      // Use findByIdAndUpdate to directly search and update the vendor
+      const deletedVendor = await UserModel.findByIdAndUpdate(
+        id,
+        { $set: { isDelete: true } }, // Mark as deleted (true)
+        { new: true },
+      );
 
-    // If vendor not found, return null or throw an error
-    if (!deletedVendor) {
-      throw new Error('Admin not found');
+      // If vendor not found, return null or throw an error
+      if (!deletedVendor) {
+        throw new Error('Admin not found');
+      }
+
+      // Return the updated vendor
+      return deletedVendor;
+    } else {
+      throw new Error('permission denied');
     }
-
-    // Return the updated vendor
-    return deletedVendor;
-   }
-   else {
-     throw new Error('permission denied');
-   }
   } catch (error) {
     throw new Error('Failed to update vendor deletion status');
   }
 };
 
+const vendorLastLoginInToDB = async (
+  id: string,
+  ip: string | string[] | undefined,
+) => {
+  console.log({ id, ip });
+  const lastLogin = {
+    timestamp: new Date(),
+    ip,
+  };
+  const updatedVendor = await UserModel.findByIdAndUpdate(
+    id,
+    { $set: { lastLogin: lastLogin } },
+    { new: true },
+  );
+
+  if (!updatedVendor) {
+    throw new Error('Vendor not found');
+  }
+
+  return updatedVendor;
+};
 export const VendorService = {
   createVendorInToDB,
   getAVendorInToDB,
   updateAVendorInToDB,
   getAllVendorsInToDB,
   deleteAVendorInToDB,
+  vendorLastLoginInToDB,
 };
