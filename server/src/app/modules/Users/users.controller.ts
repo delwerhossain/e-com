@@ -1,20 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
-import config from '../../config';
-import { IUser, IVendorProfile } from './users.interface';
+import { IUser } from './users.interface';
 import { UserValidation } from './users.validation';
-import bcrypt from 'bcrypt';
 import { UserService } from './users.services';
+import { passwordHashing } from '../../../helpers/passHandle';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, passwordHash, emailVerified, phoneNumber } = req.body;
 
     //! todo => salt rounds value
-    // Parse salt rounds with a fallback to default value if parsing fails
-    const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
 
     // Hash the password with correct salt rounds
-    const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
+    const hashedPassword = await passwordHashing(passwordHash);
 
     // Create the user object
     const data: IUser = {
@@ -73,8 +70,10 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       createdTo,
       lastLoginFrom,
       lastLoginTo,
-      showDeleted = false,
+      isDelete,
     } = req.query;
+    // todo : need to use JWT for validation  admin
+    const isAdmin = true;
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
@@ -116,10 +115,11 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
       };
     }
 
-    //! todo => check if user is admin , need to use jwt token
-    const isAdmin = req.user?.isAdmin || false;
-    if (!isAdmin || showDeleted === 'false') {
+    if (isDelete == 'false') {
       filter.isDelete = { $ne: true };
+    }
+    if (isDelete == 'true') {
+      filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};
@@ -212,9 +212,7 @@ const updateAUser = async (req: Request, res: Response, next: NextFunction) => {
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds =
-        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
-      updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
+      updateData.passwordHash = await passwordHashing(passwordHash);
     }
 
     // Check if there's any data to update

@@ -23,7 +23,7 @@ export interface IAdmin extends Document {
   isActive?: boolean;
   lastLogin?: ILoginDetails;
   profile?: IAdminProfile;
-  permissions: Array<
+  permissions?: Array<
     | 'manageUsers'
     | 'viewReports'
     | 'manageProducts'
@@ -34,6 +34,16 @@ export interface IAdmin extends Document {
     | 'manageContent'
     | 'manageSettings'
   >;
+}
+
+// Define a new interface for creating an admin
+export interface ICreateAdminInput {
+  email: string;
+  emailVerified?: boolean;
+  passwordHash: string;
+  role: 'superAdmin' | 'admin';
+  isActive?: boolean;
+  permissions: IAdmin['permissions'];
 }
 
 // Define the AdminAction interface
