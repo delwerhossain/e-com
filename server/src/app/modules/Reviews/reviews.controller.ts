@@ -1,34 +1,46 @@
 import { RequestHandler } from 'express';
 import reviewsValidation from './reviews.validation';
 import { ReviewServices } from './reviews.services';
+import {Types } from 'mongoose';
+import { error } from 'console';
 
 // Controller to create a new review
 const createReview: RequestHandler = async (req, res, next) => {
   try {
     const review = reviewsValidation.parse(req.body); // Validate the incoming review data
     const result = await ReviewServices.createReview(review);
+    // console.log(result,"line 11")
     res.status(201).json({
       success: true,
       message: 'Review created successfully',
       data: result,
     });
   } catch (error) {
+    // console.log(error,"line 19")
     next(error); // Handle validation errors or service errors
   }
 };
-
 // Controller to fetch active reviews for a specific product
 const getProductReviews: RequestHandler = async (req, res, next) => {
   try {
     const { productId } = req.params; // Extract productId from route params
-    const result = await ReviewServices.getProductReviews(productId);
+
+    // Validate and ensure productId is a valid ObjectId
+    if (!Types.ObjectId.isValid(productId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid Product ID' });
+    }
+    const result = await ReviewServices.getProductReviews(
+      new Types.ObjectId(productId),
+    );
     res.status(200).json({
       success: true,
-      message: 'product all Reviews Fetched successfully',
+      message: 'Product reviews fetched successfully',
       data: result,
     });
   } catch (error) {
-    next(error);
+    next(error); // Pass any error to error handler middleware
   }
 };
 
@@ -79,7 +91,19 @@ const getInActiveReviews: RequestHandler = async (req, res, next) => {
 // Controller to fetch all reviews regardless of their status
 const getALLReviews: RequestHandler = async (req, res, next) => {
   try {
-    const result = await ReviewServices.getALLReviews();
+    const result = await ReviewServices.getALLActiveReviews();
+    res.status(200).json({
+      success: true,
+      message: 'Operation process successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const getALLInActiveReviews: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await ReviewServices.getAllInActiveReviews();
     res.status(200).json({
       success: true,
       message: 'Operation process successfully',
@@ -94,8 +118,12 @@ const getALLReviews: RequestHandler = async (req, res, next) => {
 const isActiveReview: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params; // Extract review ID from route params
-    const { status } = req.body; // Extract the new active status from the request body
-    const result = await ReviewServices.isActiveReview(id, status);
+    const { isActive } = req.body; // Extract the new active status from the request body
+    // console.log(isActive)
+    if(!isActive){
+      throw new Error('Status Not found')
+    }
+    const result = await ReviewServices.isActiveReview(id, isActive);
     res.status(200).json({
       success: true,
       message: 'Review status updated successfully',
@@ -148,4 +176,5 @@ export const ReviewController = {
   isActiveReview, // Toggle review active status
   updateReview, // Update review fields
   deleteReview, // Delete a review by ID
+  getALLInActiveReviews
 };
