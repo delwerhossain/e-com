@@ -44,6 +44,16 @@ const createReview = async (review: IReviews) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
 // Function to fetch active reviews for a specific product
 const getProductReviews = async (productId: Types.ObjectId) => {
   // console.log(productId);
