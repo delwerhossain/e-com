@@ -1,20 +1,20 @@
 import { NextFunction, Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import config from '../../../config';
 import { IUser } from '../users.interface';
 import { VendorService } from './vendors.services';
 import { UserValidation } from '../users.validation';
+import sendResponse from '../../../../shared/sendResponse';
+import { passwordHashing } from '../../../../helpers/passHandle';
 
-const createVendor = async (req: Request, res: Response, next: NextFunction) => {
+const createVendor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const { email, passwordHash ,emailVerified, phoneNumber} = req.body;
-
-    //! todo => salt rounds value
-    // Parse salt rounds with a fallback to default value if parsing fails
-    const saltRounds = parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
+    const { email, passwordHash, emailVerified, phoneNumber } = req.body;
 
     // Hash the password with correct salt rounds
-    const hashedPassword = await bcrypt.hash(passwordHash, saltRounds);
+    const hashedPassword = await passwordHashing(passwordHash);
 
     // Create the vendor object
     const data: IUser = {
@@ -39,7 +39,7 @@ const createVendor = async (req: Request, res: Response, next: NextFunction) => 
       vendor: {
         email: result.email,
         emailVerified: result.emailVerified,
-        phoneNumber: result?.phoneNumber
+        phoneNumber: result?.phoneNumber,
       },
     });
   } catch (error: any) {
@@ -54,7 +54,11 @@ const createVendor = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 //! this route only for admin
-const getAllVendors = async (req: Request, res: Response, next: NextFunction) => {
+const getAllVendors = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const {
       page = '1',
@@ -72,21 +76,26 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
       reviewCountTo,
       createdFrom,
       createdTo,
-      showDeleted = false,
+      isDelete
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
-    
+
     // Only search for vendors
-    const role = 'vendor'; 
+    const role = 'vendor';
+    // todo : need to use JWT for validation  admin
+    const isAdmin = true;
 
     const filter: any = {};
     if (role) filter.role = role;
-    if (businessName) filter['profile.businessName'] = new RegExp(businessName as string, 'i');
+    if (businessName)
+      filter['profile.businessName'] = new RegExp(businessName as string, 'i');
     if (email) filter['profile.email'] = new RegExp(email as string, 'i');
-    if (number) filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
-    if (businessCategory) filter['profile.businessCategoryID'] = businessCategory;
+    if (number)
+      filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    if (businessCategory)
+      filter['profile.businessCategoryID'] = businessCategory;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
 
     // Rating filters
@@ -96,11 +105,13 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
         ...(ratingsTo && { $lte: parseFloat(ratingsTo as string) }),
       };
     }
-    
+
     // Review count filters
     if (reviewCountFrom || reviewCountTo) {
       filter['profile.ratings.reviewCount'] = {
-        ...(reviewCountFrom && { $gte: parseInt(reviewCountFrom as string, 10) }),
+        ...(reviewCountFrom && {
+          $gte: parseInt(reviewCountFrom as string, 10),
+        }),
         ...(reviewCountTo && { $lte: parseInt(reviewCountTo as string, 10) }),
       };
     }
@@ -112,11 +123,11 @@ const getAllVendors = async (req: Request, res: Response, next: NextFunction) =>
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-
-    // Only admins can see deleted vendors
-    const isAdmin = req.vendor?.isAdmin || false;
-    if (!isAdmin || showDeleted === 'false') {
+    if (isDelete == "false") {
       filter.isDelete = { $ne: true };
+    }
+    if (isDelete == "true") {
+      filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};
@@ -167,7 +178,10 @@ const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Fetch the vendor from the database using either ID or email
-    const result = await VendorService.getAVendorInToDB(id as string , email as string);
+    const result = await VendorService.getAVendorInToDB(
+      id as string,
+      email as string,
+    );
 
     // If the vendor is not found, return a 404 response
     if (!result) {
@@ -189,26 +203,25 @@ const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-const updateAVendor = async (req: Request, res: Response, next: NextFunction) => {
+const updateAVendor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userID = req.params.id;
     const userRowData = req.body;
     const { passwordHash, ...updateData } = userRowData;
 
-    // last login timestamp is not allowed to update
-    if (updateData.lastLogin) {
-      delete updateData.lastLogin.timestamp;
-    }
 
     // Handle password update if provided
     if (passwordHash) {
-      const saltRounds =
-        parseInt(config.bcrypt_salt_rounds as string, 10) || 12;
-      updateData.passwordHash = await bcrypt.hash(passwordHash, saltRounds);
+      updateData.passwordHash = await passwordHashing(passwordHash);
     }
 
     // Check if there's any data to update
     if (!Object.keys(updateData).length) {
+     
       return res.status(400).json({
         success: false,
         statusCode: 400,
@@ -217,7 +230,8 @@ const updateAVendor = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     // Validate the update data using Zod
-    const validatedData = UserValidation.vendorUpdateValidation.parse(updateData);
+    const validatedData =
+      UserValidation.vendorUpdateValidation.parse(updateData);
 
     // Update the vendor in the database
     const updatedVendor = await VendorService.updateAVendorInToDB(
@@ -247,10 +261,20 @@ const updateAVendor = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 //! this route only for admin
-const deleteAVendor = async (req: Request, res: Response, next: NextFunction) => {
+const deleteAVendor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const userID = req.params.id;
-    const deletedVendor = await VendorService.deleteAVendorInToDB(userID);
+    const vendorID = req.params.id;
+    //! todo get from JWT + middleware isAdmin
+    const isAdmin = true;
+
+    const deletedVendor = await VendorService.deleteAVendorInToDB(
+      vendorID,
+      isAdmin,
+    );
     if (!deletedVendor) {
       return res.status(404).json({
         success: false,
@@ -269,10 +293,45 @@ const deleteAVendor = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
+const vendorLastLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // Get IP address from 'x-forwarded-for' or fallback to 'req.socket.remoteAddress'
+  let ip =
+    (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+
+  // If using IPv6 (::1), convert it to IPv4 (127.0.0.1)
+  if (ip === '::1') {
+    ip = '127.0.0.1';
+  }
+
+  // Handle cases where 'x-forwarded-for' may return multiple IPs
+  if (ip && ip.includes(',')) {
+    ip = ip.split(',')[0].trim();
+  }
+
+  const { id } = req.params;
+
+  // You can log the IP address or use it as needed
+  console.log({ ip });
+
+  const result = await VendorService.vendorLastLoginInToDB(id, ip);
+
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Vendor last login updated successfully',
+    data: result,
+  });
+};
+
 export const VendorController = {
   getAllVendors,
   createVendor,
   getAVendor,
   updateAVendor,
   deleteAVendor,
+  vendorLastLogin,
 };

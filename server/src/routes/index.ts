@@ -5,6 +5,7 @@ import { vendorRoutes } from '../app/modules/Users/Vendors/vendors.routes';
 import { subcategoryRoutes } from '../app/modules/SubCategory/subCategory.routes';
 import { reviewRoutes } from '../app/modules/Reviews/reviews.routes';
 import { ProductRoutes } from '../app/modules/Products/product.routes';
+import { adminRoutes } from '../app/modules/Admin/admin.routes';
 
 const router = Router();
 
@@ -24,6 +25,14 @@ const moduleRoutes = [
   {
     path: '/vendor',
     route: vendorRoutes,
+  },
+  {
+    path: '/admin',
+    route: adminRoutes,
+  },
+  {
+    path: '/super-admin',
+    route: adminRoutes,
   },
   {
     path: '/reviews',
