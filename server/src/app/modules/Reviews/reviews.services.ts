@@ -65,10 +65,9 @@ const bestReviews = async () => {
 // Function to get a specific review by its ID
 const getAReview = async (id: string) => {
   // Find a review by its unique ID
-  const result = await ReviewsModel.findById(id).populate(
-    'reviewerId',
-    'productId',
-  );
+  const result = await ReviewsModel.findById(id)
+    .populate('reviewerId')
+    .populate('productId');
   if (!result) {
     return { Not_found: 'Review not found' };
   }
