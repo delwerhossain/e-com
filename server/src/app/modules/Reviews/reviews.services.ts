@@ -50,7 +50,7 @@ const getProductReviews = async (productId: Types.ObjectId) => {
   const result = await ReviewsModel.find({
     isActive: true,
     productId: productId, // Query by ObjectId
-  });
+  }).populate('reviewerId', 'productId');
   // console.log(result);
   return result; // Return the array directly, even if it's empty
 };
@@ -65,7 +65,10 @@ const bestReviews = async () => {
 // Function to get a specific review by its ID
 const getAReview = async (id: string) => {
   // Find a review by its unique ID
-  const result = await ReviewsModel.findById(id);
+  const result = await ReviewsModel.findById(id).populate(
+    'reviewerId',
+    'productId',
+  );
   if (!result) {
     return { Not_found: 'Review not found' };
   }
