@@ -6,6 +6,7 @@ import { subcategoryRoutes } from '../app/modules/SubCategory/subCategory.routes
 import { reviewRoutes } from '../app/modules/Reviews/reviews.routes';
 import { ProductRoutes } from '../app/modules/Products/product.routes';
 import { adminRoutes } from '../app/modules/Admin/admin.routes';
+import { superAdminRoutes } from '../app/modules/Admin/SuperAdmin/superAdmin.routes';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ const moduleRoutes = [
   },
   {
     path: '/super-admin',
-    route: adminRoutes,
+    route: superAdminRoutes,
   },
   {
     path: '/reviews',
