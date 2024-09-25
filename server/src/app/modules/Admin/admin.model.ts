@@ -35,6 +35,7 @@ const AdminSchema = new Schema<IAdmin>(
     role: {
       type: String,
       enum: ['superAdmin', 'admin'],
+      default: 'admin',
       required: [true, 'Role is required'],
     },
     isDelete: {

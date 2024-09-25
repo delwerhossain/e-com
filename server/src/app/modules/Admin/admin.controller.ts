@@ -7,8 +7,7 @@ import config from '../../config';
 import { IAdmin, ICreateAdminInput } from './admin.interface';
 import { AdminValidation } from './admin.validation';
 import { passwordHashing } from '../../../helpers/passHandle';
-import mongoose from 'mongoose';
-import { isValidEmail } from '../../../helpers/validation';
+import {  validateIdOrEmail } from '../../../helpers/validation';
 
 const getAllAdmins: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
@@ -22,7 +21,7 @@ const getAllAdmins: RequestHandler = catchAsync(
       isActive,
       createdFrom,
       createdTo,
-      isDelete ,
+      isDelete,
     } = req.query;
     //
     const pageNumber = parseInt(page as string, 10);
@@ -39,10 +38,10 @@ const getAllAdmins: RequestHandler = catchAsync(
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-    if (isDelete == "false") {
+    if (isDelete == 'false') {
       filter.isDelete = { $ne: true };
     }
-    if (isDelete == "true") {
+    if (isDelete == 'true') {
       filter.isDelete = { $ne: false };
     }
 
@@ -77,57 +76,33 @@ const getAllAdmins: RequestHandler = catchAsync(
     });
   },
 );
+
 const getAdmin: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
     const { id, email } = req.query;
 
-    // Validate input: require either id or email, and ensure formats are correct
-    if (!(id || email)) {
-      return sendResponse(res, {
-        statusCode: 400,
-        success: false,
-        message:
-          'Please provide either an ID or an email to search for an admin.',
-      });
-    }
+    // Use the utility function to validate id and email
+    const validationError = validateIdOrEmail(
+      id as string | undefined,
+      email as string | undefined,
+      res,
+    );
 
-    if (id && !mongoose.isValidObjectId(id as string)) {
-      return sendResponse(res, {
-        statusCode: 400,
-        success: false,
-        message: 'Invalid admin ID format provided.',
-      });
-    }
+    // If there is a validation error, return the error response early
+    if (validationError) return validationError;
 
-    if (email && !isValidEmail(email as string)) {
-      return sendResponse(res, {
-        statusCode: 400,
-        success: false,
-        message: 'Invalid email format provided.',
-      });
-    }
-
-    // Fetch admin by id or email
+    // Proceed to fetch the admin if validation passes (returns null)
     const result = await AdminServices.getAdminInToDB(
       id as string,
       email as string,
     );
 
-    // If admin not found, return a 404 response
-    if (!result) {
-      return sendResponse(res, {
-        statusCode: 404,
-        success: false,
-        message: 'Admin not found.',
-      });
-    }
-
-    // Return the found admin with a success response
+    // Return response based on whether admin was found
     return sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Admin retrieved successfully',
-      data: result,
+      statusCode: result ? 200 : 404,
+      success: !!result,
+      message: result ? 'Admin retrieved successfully' : 'Admin not found.',
+      data: result || undefined,
     });
   },
 );
@@ -177,6 +152,9 @@ const updateAdmin: RequestHandler = catchAsync(
     // todo need to use JWT for validation super admin
     const isSuperAdmin = true;
 
+    //todo get user id from JWT
+    const adminIdFromJWT = '';
+
     const data: Partial<IAdmin> = {
       email,
       emailVerified,
@@ -204,6 +182,7 @@ const updateAdmin: RequestHandler = catchAsync(
       id,
       validatedData,
       isSuperAdmin,
+      adminIdFromJWT,
     );
 
     return sendResponse(res, {
