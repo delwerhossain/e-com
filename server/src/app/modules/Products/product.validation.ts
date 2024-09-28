@@ -77,3 +77,67 @@ export const ProductValidation = z
       });
     }
   });
+
+//update Validation ..........
+
+// Zod schema for updating IProduct
+export const ProductUpdateValidation = z
+  .object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    price: z
+      .number()
+      .min(1, { message: 'Price must be at least 1' })
+      .optional(),
+    quantity: z
+      .number()
+      .min(1, { message: 'Quantity must be at least 1' })
+      .optional(),
+    vendorId: objectIdSchema.optional(),
+    subCategoryId: objectIdSchema.optional(),
+    categoryId: objectIdSchema.optional(),
+    images: z.union([z.array(z.string()), z.string()]).optional(),
+
+    color: z.string().optional(),
+    isFeatured: z.boolean().optional(),
+    isActive: z.boolean().optional(),
+    isDeleted: z.boolean().optional(),
+    isBestProduct: z.boolean().optional(),
+
+    // Ratings schema
+    ratings: z
+      .object({
+        averageRating: z.number().min(0).max(5).optional(),
+        reviewsCount: z.number().min(0).optional(),
+      })
+      .optional(),
+
+    reviews: z.array(objectIdSchema).optional(),
+
+    // Discount and stock management
+    discountPercentage: z.number().min(0).max(100).optional(),
+    discountedPrice: z.number().min(0).optional(),
+    outOfStock: z.boolean().optional(),
+
+    // Delivery and restock logic
+    delivery: z.enum(['Free', 'Pay']).optional(),
+    deliveryCharge: z.number().min(0).optional(),
+
+    restockDate: z.string().optional(),
+
+    // Shipping and size management
+    weight: z.string().optional(),
+    size: z.string().optional(),
+    maxOrderQuantity: z.number().min(1).optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    // Conditional validation for deliveryCharge
+    if (data.delivery === 'Pay' && data.deliveryCharge === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Delivery charge is required when delivery is Pay',
+        path: ['deliveryCharge'],
+      });
+    }
+  });
