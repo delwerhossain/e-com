@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
-import { IAdmin } from "../app/modules/Admin/admin.interface";
-import sendResponse from "../shared/sendResponse";
-import { Response } from "express";
+import mongoose from 'mongoose';
+import { IAdmin } from '../app/modules/Admin/admin.interface';
+import sendResponse from '../shared/sendResponse';
+import { Response } from 'express';
+import { IUser } from '../app/modules/Users/users.interface';
 
 // Utility function to validate email format
 export const isValidEmail = (email: string) => {
@@ -9,8 +10,10 @@ export const isValidEmail = (email: string) => {
   return emailRegex.test(email);
 };
 
+// Utility function to check for sensitive field updates
+// this function can use for admin and user
 export const checkForSensitiveFieldUpdate = (
-  data: Partial<IAdmin>,
+  data: Partial<IAdmin> | Partial<IUser>,
   sensitiveFields: string[],
 ) => {
   const attemptedSensitiveFields = Object.keys(data).filter(field =>
@@ -25,21 +28,27 @@ export const checkForSensitiveFieldUpdate = (
 };
 
 // New function to filter out sensitive fields from the data
-export const filterSensitiveFields = (data: Partial<IAdmin>, sensitiveFields: string[]) => {
+export const filterSensitiveFields = (
+  data: Partial<IAdmin> | Partial<IUser>,
+  sensitiveFields: string[],
+) => {
   return Object.fromEntries(
-    Object.entries(data).filter(([key]) => !sensitiveFields.includes(key))
+    Object.entries(data).filter(([key]) => !sensitiveFields.includes(key)),
   );
 };
 
-
-
 // Utility function for validating inputs (id and email)
-export const validateIdOrEmail = (id: string | undefined, email: string | undefined, res: Response) => {
+export const validateIdOrEmail = (
+  id: string | undefined,
+  email: string | undefined,
+  res: Response,
+) => {
   if (!(id || email)) {
     return sendResponse(res, {
       statusCode: 400,
       success: false,
-      message: 'Please provide either an ID or an email to search for an admin.',
+      message:
+        'Please provide either an ID or an email to search for an admin.',
     });
   }
   if (id && !mongoose.isValidObjectId(id)) {
