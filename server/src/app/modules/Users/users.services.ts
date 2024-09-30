@@ -1,6 +1,9 @@
+import {
+  checkForSensitiveFieldUpdate,
+  filterSensitiveFields,
+} from '../../../helpers/validation';
 import { IUser } from './users.interface';
 import { UserModel } from './users.model';
-
 
 const createUserInToDB = async (data: any) => {
   try {
@@ -16,7 +19,6 @@ const createUserInToDB = async (data: any) => {
   }
 };
 
-
 const getAUserInToDB = async (id: string, email: string) => {
   const searchCriteria: any = {};
 
@@ -26,7 +28,7 @@ const getAUserInToDB = async (id: string, email: string) => {
   } else if (email) {
     searchCriteria.email = email;
   }
-// if user isDeleted is true then it will not be displayed
+  // if user isDeleted is true then it will not be displayed
 
   // Find the user by either ID or email, excluding the password hash and other sensitive fields
   const result = await UserModel.findOne(searchCriteria).select(
@@ -45,17 +47,22 @@ const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
       'updatedAt',
     ];
 
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([key]) => !sensitiveFields.includes(key)),
-    );
+    checkForSensitiveFieldUpdate(data, sensitiveFields);
+
+    // Filter out sensitive fields from the data
+    const updateData = filterSensitiveFields(data, sensitiveFields);
 
     // Find and update the user //! For updateOne we can user email if we use  findByOneAndUpdate
-  // Perform the update
-  const updatedUser = await UserModel.findByIdAndUpdate(
-    id,
-    { $set: updateData },
-    { new: true, runValidators: true, select: '-passwordHash -role -isDelete -createdAt -updatedAt' } // Exclude sensitive fields
-  );
+    // Perform the update
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true,
+        select: '-passwordHash -role -isDelete -createdAt -updatedAt',
+      }, // Exclude sensitive fields
+    );
 
     // Return null if the user is not found
     if (!updatedUser) {
@@ -73,16 +80,16 @@ const getAllUsersInToDB = async (
   sort: any,
   page: number,
   limit: number,
-  options: { isAdmin: boolean }
+  options: { isAdmin: boolean },
 ) => {
   const skip = (page - 1) * limit;
 
   // Aggregation pipeline to optimize filtering and search
   const aggregationPipeline = [
-    { $match: filter },  // Apply the filters
-    { $sort: sort },     // Sort results
-    { $skip: skip },     // Pagination skip
-    { $limit: limit },   // Pagination limit
+    { $match: filter }, // Apply the filters
+    { $sort: sort }, // Sort results
+    { $skip: skip }, // Pagination skip
+    { $limit: limit }, // Pagination limit
     {
       $project: {
         passwordHash: 0,
@@ -93,7 +100,9 @@ const getAllUsersInToDB = async (
   ];
 
   // Execute the aggregation pipeline
-  const result = await UserModel.aggregate(aggregationPipeline, { allowDiskUse: true });
+  const result = await UserModel.aggregate(aggregationPipeline, {
+    allowDiskUse: true,
+  });
 
   // Get the total count of documents matching the filter
   const total = await UserModel.countDocuments(filter);

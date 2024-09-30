@@ -28,7 +28,7 @@ export interface IUserProfile {
   avatarUrl?: string;
   shippingAddress?: IAddress;
   billingAddress?: IAddress;
-  dateOfBirth?: Date;
+  dateOfBirth?: Date | string;
   gender?: 'male' | 'female' | 'other';
 }
 

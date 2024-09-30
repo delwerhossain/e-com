@@ -106,7 +106,7 @@ const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ['user', 'vendor'],
-      default: 'vendor',
+      default: 'user',
     },
     isDelete: {
       type: Boolean,
