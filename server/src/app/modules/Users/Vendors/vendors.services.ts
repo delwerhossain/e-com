@@ -1,3 +1,7 @@
+import {
+  checkForSensitiveFieldUpdate,
+  filterSensitiveFields,
+} from '../../../../helpers/validation';
 import { IUser } from '../users.interface';
 import { UserModel } from '../users.model';
 
@@ -86,10 +90,10 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
       'updatedAt',
       'lastLogin',
     ];
+    checkForSensitiveFieldUpdate(data, sensitiveFields);
 
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([key]) => !sensitiveFields.includes(key)),
-    );
+    // Filter out sensitive fields from the data
+    const updateData = filterSensitiveFields(data, sensitiveFields);
 
     // Find and update the vendor //! For updateOne we can vendor email if we use  findByOneAndUpdate
     // Perform the update
