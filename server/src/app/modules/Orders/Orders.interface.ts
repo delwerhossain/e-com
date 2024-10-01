@@ -32,7 +32,8 @@ export interface IOrder {
   billingAddress: IAddress;          // Billing address
   paymentStatus?: PaymentStatus;     // Payment status (pending, completed, failed)
   isPaid: boolean;                   // Flag to indicate if the order is paid
-  paymentMethod?: string;            // Payment method used
+  paymentMethod:  'credit card'| 'paypal'| 'bank transfer'| 'cash on delivery';
+  transactionId?:string;            // Payment method used
   orderStatus?: OrderStatus;          // Order status (processing, shipped, delivered, cancelled)
   shippingMethod?: string;           // Shipping method used
   trackingNumber?: string;           // Shipping tracking number
