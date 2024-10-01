@@ -5,6 +5,7 @@ const router = express.Router();
 
 // Define routes for products
 router.get('/', ProductController.getProducts); // Get all active products
+router.get('/vendor/:id', ProductController.getVendorAllProducts); // Get all vendor products active products
 router.get('/best', ProductController.getBestProducts); // Get all best products
 router.get('/featured', ProductController.getFeaturedProducts); // Get all featured products
 router.get('/inactive', ProductController.getInActiveProducts); // Get all inactive products

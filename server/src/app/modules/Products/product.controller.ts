@@ -15,6 +15,20 @@ const getProducts: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+const getVendorAllProducts: RequestHandler = async (req, res, next) => {
+  const vendorId = req.params.id;
+  console.log(vendorId)
+  try {
+    const result = await ProductServices.getVendorAllProducts(vendorId);
+    res.status(200).json({
+      success: true,
+      message: "Vendor's All Products fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Controller to fetch a single product by ID
 const getSingleProduct: RequestHandler = async (req, res, next) => {
@@ -138,6 +152,7 @@ const deleteProduct: RequestHandler = async (req, res, next) => {
 // Export all the controllers
 export const ProductController = {
   getProducts, // Get all active products
+  getVendorAllProducts, // Get all active products
   getSingleProduct, // Get a single product by ID
   getBestProducts, // Get the best products
   getFeaturedProducts, // Get featured products

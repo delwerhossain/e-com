@@ -2,6 +2,8 @@ import { Types } from 'mongoose';
 import { IProduct } from './product.interface';
 import { ProductModel } from './product.model';
 import { ProductUpdateValidation } from './product.validation';
+import { UserModel } from '../Users/users.model';
+import { error } from 'console';
 
 const getProducts = async () => {
   const result = await ProductModel.find({ isActive: true }, {}).populate(
@@ -16,6 +18,20 @@ const getSingleProduct = async (id: string) => {
 
   if (!result) {
     return { not_found: 'Product Not Found' };
+  }
+  // console.log(result, 'line 28');
+  return result;
+};
+const getVendorAllProducts = async (vendorId: string) => {
+  const validateVendor = await UserModel.findById(vendorId);
+  if (!validateVendor) {
+    throw new Error('No Vendor Found With Provided ID');
+  }
+  // Find the product by ID and populate reviews
+  let result = await ProductModel.find({ vendorId }).populate('reviews');
+
+  if (!result.length) {
+    return { not_found: 'No product found for this vendor' };
   }
   // console.log(result, 'line 28');
   return result;
@@ -124,4 +140,5 @@ export const ProductServices = {
   isActiveProduct,
   updateAProduct,
   deleteProduct,
+  getVendorAllProducts,
 };
