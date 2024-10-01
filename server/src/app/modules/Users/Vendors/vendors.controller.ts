@@ -4,13 +4,10 @@ import { VendorService } from './vendors.services';
 import { UserValidation } from '../users.validation';
 import sendResponse from '../../../../shared/sendResponse';
 import { passwordHashing } from '../../../../helpers/passHandle';
+import catchAsync from '../../../../shared/catchAsync';
 
-const createVendor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
+const createVendor = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { email, passwordHash, emailVerified, phoneNumber } = req.body;
 
     // Hash the password with correct salt rounds
@@ -33,33 +30,22 @@ const createVendor = async (
     const result = await VendorService.createVendorInToDB(validatedData);
 
     // Return the created vendor, excluding sensitive information like password
-    res.status(201).json({
-      success: true,
+    return sendResponse(res, {
       statusCode: 201,
-      vendor: {
+      success: true,
+      message: 'Vendor created successfully',
+      data: {
         email: result.email,
         emailVerified: result.emailVerified,
         phoneNumber: result?.phoneNumber,
       },
     });
-  } catch (error: any) {
-    if (error.message === 'Email already exists') {
-      return res.status(400).json({
-        success: false,
-        message: 'This email is already registered. Please use another email.',
-      });
-    }
-    next(error);
-  }
-};
+  },
+);
 
 //! this route only for admin
-const getAllVendors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
+const getAllVendors = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const {
       page = '1',
       limit = '10',
@@ -67,7 +53,7 @@ const getAllVendors = async (
       sortOrder = 'desc',
       businessName,
       email,
-      number,
+      phoneNumber,
       businessCategory,
       isActive,
       ratingsFrom,
@@ -76,7 +62,7 @@ const getAllVendors = async (
       reviewCountTo,
       createdFrom,
       createdTo,
-      isDelete
+      isDelete,
     } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
@@ -92,8 +78,9 @@ const getAllVendors = async (
     if (businessName)
       filter['profile.businessName'] = new RegExp(businessName as string, 'i');
     if (email) filter['profile.email'] = new RegExp(email as string, 'i');
-    if (number)
-      filter['profile.phoneNumber'] = new RegExp(number as string, 'i');
+    // todo : phoneNumber issue need to fix
+    if (phoneNumber)
+      filter.phoneNumber = new RegExp(phoneNumber as string, 'i');
     if (businessCategory)
       filter['profile.businessCategoryID'] = businessCategory;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
@@ -123,16 +110,16 @@ const getAllVendors = async (
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-    if (isDelete == "false") {
+    if (isDelete == 'false') {
       filter.isDelete = { $ne: true };
     }
-    if (isDelete == "true") {
+    if (isDelete == 'true') {
       filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};
     sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
-
+    console.log(filter);
     // Use the optimized DB function
     const result = await VendorService.getAllVendorsInToDB(
       filter,
@@ -143,10 +130,9 @@ const getAllVendors = async (
     );
 
     const totalPages = Math.ceil(result.total / limitNumber);
-
-    res.status(200).json({
-      success: true,
+    return sendResponse(res, {
       statusCode: 200,
+      success: true,
       message: 'Vendors retrieved successfully',
       meta: {
         currentPage: pageNumber,
@@ -158,18 +144,16 @@ const getAllVendors = async (
       },
       data: result.data,
     });
-  } catch (err) {
-    next(err);
-  }
-};
+  },
+);
 
-const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+const getAVendor = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { id, email } = req.query;
 
     // Ensure at least one of id or email is provided
     if (!id && !email) {
-      return res.status(400).json({
+      return sendResponse(res, {
         success: false,
         statusCode: 400,
         message:
@@ -185,7 +169,7 @@ const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
 
     // If the vendor is not found, return a 404 response
     if (!result) {
-      return res.status(404).json({
+      return sendResponse(res, {
         success: false,
         statusCode: 404,
         message: 'Vendor not found',
@@ -193,26 +177,20 @@ const getAVendor = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // If the vendor is found, return the safe vendor information with a 200 status
-    res.status(200).json({
-      success: true,
+
+    return sendResponse(res, {
       statusCode: 200,
+      success: true,
       message: 'Vendor retrieved successfully',
-      vendor: result, // Returning the vendor data with sensitive information excluded
+      data: result,
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
-const updateAVendor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
+  },
+);
+const updateAVendor = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const userID = req.params.id;
     const userRowData = req.body;
     const { passwordHash, ...updateData } = userRowData;
-
 
     // Handle password update if provided
     if (passwordHash) {
@@ -221,12 +199,11 @@ const updateAVendor = async (
 
     // Check if there's any data to update
     if (!Object.keys(updateData).length) {
-     
-      return res.status(400).json({
+      return sendResponse(res, {
         success: false,
         statusCode: 400,
         message: 'No update data provided',
-      });
+      }) 
     }
 
     // Validate the update data using Zod
@@ -241,32 +218,26 @@ const updateAVendor = async (
 
     // If the vendor is not found, return a 404 response
     if (!updatedVendor) {
-      return res.status(404).json({
-        success: false,
+      return sendResponse(res, {
         statusCode: 404,
+        success: false,
         message: 'Vendor not found',
       });
     }
 
     // Return the updated vendor data
-    return res.status(200).json({
-      success: true,
+    return sendResponse(res, {
       statusCode: 200,
+      success: true,
       message: 'Vendor updated successfully!',
       data: updatedVendor,
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
+  },
+);
 
 //! this route only for admin
-const deleteAVendor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
+const deleteAVendor = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const vendorID = req.params.id;
     //! todo get from JWT + middleware isAdmin
     const isAdmin = true;
@@ -276,56 +247,51 @@ const deleteAVendor = async (
       isAdmin,
     );
     if (!deletedVendor) {
-      return res.status(404).json({
-        success: false,
+      return sendResponse(res, {
         statusCode: 404,
-        message: 'Vendor not found.',
+        success: false,
+        message: 'Vendor not found',
       });
     }
-    return res.status(200).json({
-      success: true,
+    return sendResponse(res, {
       statusCode: 200,
-      message: 'USER deleted successfully!',
-      data: deletedVendor,
+      success: true,
+      message: 'Vendor deleted successfully!',
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
+  },
+);
 
-const vendorLastLogin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // Get IP address from 'x-forwarded-for' or fallback to 'req.socket.remoteAddress'
-  let ip =
-    (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+const vendorLastLogin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // Get IP address from 'x-forwarded-for' or fallback to 'req.socket.remoteAddress'
+    let ip =
+      (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
 
-  // If using IPv6 (::1), convert it to IPv4 (127.0.0.1)
-  if (ip === '::1') {
-    ip = '127.0.0.1';
-  }
+    // If using IPv6 (::1), convert it to IPv4 (127.0.0.1)
+    if (ip === '::1') {
+      ip = '127.0.0.1';
+    }
 
-  // Handle cases where 'x-forwarded-for' may return multiple IPs
-  if (ip && ip.includes(',')) {
-    ip = ip.split(',')[0].trim();
-  }
+    // Handle cases where 'x-forwarded-for' may return multiple IPs
+    if (ip && ip.includes(',')) {
+      ip = ip.split(',')[0].trim();
+    }
 
-  const { id } = req.params;
+    const { id } = req.params;
 
-  // You can log the IP address or use it as needed
-  console.log({ ip });
+    // You can log the IP address or use it as needed
+    console.log({ ip });
 
-  const result = await VendorService.vendorLastLoginInToDB(id, ip);
+    const result = await VendorService.vendorLastLoginInToDB(id, ip);
 
-  return sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Vendor last login updated successfully',
-    data: result,
-  });
-};
+    return sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Vendor last login updated successfully',
+      data: result,
+    });
+  },
+);
 
 export const VendorController = {
   getAllVendors,
