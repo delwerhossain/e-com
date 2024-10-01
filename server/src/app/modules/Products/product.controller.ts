@@ -4,8 +4,9 @@ import { ProductServices } from './product.services';
 
 // Controller to fetch all active products
 const getProducts: RequestHandler = async (req, res, next) => {
+  
   try {
-    const result = await ProductServices.getProducts();
+    const result = await ProductServices.getProducts(req.query);
     res.status(200).json({
       success: true,
       message: 'Products fetched successfully',
@@ -15,6 +16,7 @@ const getProducts: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 const getVendorAllProducts: RequestHandler = async (req, res, next) => {
   const vendorId = req.params.id;
   console.log(vendorId)

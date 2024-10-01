@@ -4,8 +4,20 @@ import { ProductModel } from './product.model';
 import { ProductUpdateValidation } from './product.validation';
 import { UserModel } from '../Users/users.model';
 
-const getProducts = async () => {
-  const result = await ProductModel.find({ isActive: true }, {}).populate(
+const getProducts = async (query: Record<string, unknown>) => {
+
+  let searchTerm = ''
+  if (query?.searchTerm) {
+    searchTerm = query.searchTerm as string
+  }
+  const searchableFields = ["name", "color", "categoryName", "subcategoryName", "size"]
+  const result = await ProductModel.find({
+    isActive: true,
+    $or: searchableFields.map((field) => ({
+      [field]: { $regex: searchTerm }
+    })
+    )
+  }).populate(
     'reviews',
   );
   return result;

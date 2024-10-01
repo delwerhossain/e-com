@@ -33,8 +33,9 @@ export const ProductValidation = z
     subCategoryId: objectIdSchema.optional(),
     categoryId: objectIdSchema.optional(),
     images: z.union([z.array(z.string()), z.string()]),
-
     color: z.string().optional(),
+    categoryName: z.string(),
+    subcategoryName: z.string().optional(),
     isFeatured: z.boolean().default(false),
     isActive: z.boolean().default(true),
     isDeleted: z.boolean().default(false),

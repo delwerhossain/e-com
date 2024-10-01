@@ -118,6 +118,13 @@ const productSchema = new Schema<IProduct>(
       ref: 'Vendor',
       required: [true, 'Vendor ID is required'],
     },
+    categoryName: {
+      type: String,
+      required: [true, 'Product categoryName is required'],
+    },
+    subcategoryName: {
+      type: String,
+    },
     subCategoryId: {
       type: Schema.Types.ObjectId,
       ref: 'SubCategory',
@@ -130,6 +137,7 @@ const productSchema = new Schema<IProduct>(
       type: [String],
       required: [true, 'Product Images are required'],
     },
+
     color: { type: String }, // Optional color field
     isFeatured: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
