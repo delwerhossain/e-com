@@ -5,6 +5,7 @@ import { UserValidation } from '../users.validation';
 import sendResponse from '../../../../shared/sendResponse';
 import { passwordHashing } from '../../../../helpers/passHandle';
 import catchAsync from '../../../../shared/catchAsync';
+import { ZodError } from 'zod';
 
 const createVendor = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -42,8 +43,6 @@ const createVendor = catchAsync(
     });
   },
 );
-
-//! this route only for admin
 const getAllVendors = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -53,7 +52,10 @@ const getAllVendors = catchAsync(
       sortOrder = 'desc',
       businessName,
       email,
+      contactEmail,
       phoneNumber,
+      publicPhone,
+      taxId,
       businessCategory,
       isActive,
       ratingsFrom,
@@ -63,22 +65,80 @@ const getAllVendors = catchAsync(
       createdFrom,
       createdTo,
       isDelete,
+      country,
+      city,
+      state,
+      hasSocialMedia,
+      hasWebsite,
+      hasAvatar,
+      lastLoginFrom,
+      lastLoginTo,
+      ...other
     } = req.query;
+
+    const allowedQueryParams = [
+      'page',
+      'limit',
+      'sortBy',
+      'sortOrder',
+      'businessName',
+      'email',
+      'contactEmail',
+      'phoneNumber',
+      'publicPhone',
+      'taxId',
+      'businessCategory',
+      'isActive',
+      'ratingsFrom',
+      'ratingsTo',
+      'reviewCountFrom',
+      'reviewCountTo',
+      'createdFrom',
+      'createdTo',
+      'isDelete',
+      'country',
+      'city',
+      'state',
+      'hasSocialMedia',
+      'hasWebsite',
+      'hasAvatar',
+      'lastLoginFrom',
+      'lastLoginTo',
+    ];
+
+    // Validate for invalid query parameters
+    const invalidParams = Object.keys(req.query).filter(
+      param => !allowedQueryParams.includes(param),
+    );
+    if (invalidParams.length > 0) {
+      return next(
+        new Error(`Invalid query parameters: ${invalidParams.join(', ')}`),
+      );
+    }
 
     const pageNumber = parseInt(page as string, 10);
     const limitNumber = parseInt(limit as string, 10);
 
     // Only search for vendors
     const role = 'vendor';
-    // todo : need to use JWT for validation  admin
-    const isAdmin = true;
+    const isAdmin = false; // Use JWT to validate this
 
     const filter: any = {};
     if (role) filter.role = role;
     if (businessName)
       filter['profile.businessName'] = new RegExp(businessName as string, 'i');
-    if (email) filter['profile.email'] = new RegExp(email as string, 'i');
-    // todo : phoneNumber issue need to fix
+    if (taxId) filter['profile.taxId'] = new RegExp(taxId as string, 'i');
+    if (email) filter.email = new RegExp(email as string, 'i');
+    if (contactEmail)
+      filter['profile.contactInfo.contactEmail'] = new RegExp(
+        contactEmail as string,
+        'i',
+      );
+    if (publicPhone)
+      filter['profile.contactInfo.publicPhone'] = new RegExp(
+        publicPhone as string,
+        'i',
+      );
     if (phoneNumber)
       filter.phoneNumber = new RegExp(phoneNumber as string, 'i');
     if (businessCategory)
@@ -103,24 +163,55 @@ const getAllVendors = catchAsync(
       };
     }
 
-    // Date filters
+    // Date filters for vendor creation
     if (createdFrom || createdTo) {
       filter.createdAt = {
         ...(createdFrom && { $gte: new Date(createdFrom as string) }),
         ...(createdTo && { $lte: new Date(createdTo as string) }),
       };
     }
-    if (isDelete == 'false') {
-      filter.isDelete = { $ne: true };
+
+    // Last login date filters
+    if (lastLoginFrom || lastLoginTo) {
+      filter['lastLogin.timestamp'] = {
+        ...(lastLoginFrom && { $gte: new Date(lastLoginFrom as string) }),
+        ...(lastLoginTo && { $lte: new Date(lastLoginTo as string) }),
+      };
     }
-    if (isDelete == 'true') {
+
+    // Country, City, and State filters
+    if (country) filter['profile.contactInfo.contactAddress.country'] = country;
+    if (city) filter['profile.contactInfo.contactAddress.city'] = city;
+    if (state) filter['profile.contactInfo.contactAddress.state'] = state;
+
+    // Filter by social media presence
+    if (hasSocialMedia === 'true') {
+      filter.$or = [
+        { 'profile.socialMediaLinks.facebook': { $exists: true, $ne: '' } },
+        { 'profile.socialMediaLinks.twitter': { $exists: true, $ne: '' } },
+        { 'profile.socialMediaLinks.instagram': { $exists: true, $ne: '' } },
+      ];
+    }
+
+    // Filter by website presence
+    if (hasWebsite === 'true')
+      filter['profile.websiteUrl'] = { $exists: true, $ne: '' };
+
+    // Filter by avatar presence
+    if (hasAvatar === 'true')
+      filter['profile.avatarUrl'] = { $exists: true, $ne: '' };
+
+    // Soft delete filter
+    if (isDelete === 'false') {
+      filter.isDelete = { $ne: true };
+    } else if (isDelete === 'true') {
       filter.isDelete = { $ne: false };
     }
 
     const sort: any = {};
     sort[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
-    console.log(filter);
-    // Use the optimized DB function
+
+    // Use optimized DB query
     const result = await VendorService.getAllVendorsInToDB(
       filter,
       sort,
@@ -153,12 +244,9 @@ const getAVendor = catchAsync(
 
     // Ensure at least one of id or email is provided
     if (!id && !email) {
-      return sendResponse(res, {
-        success: false,
-        statusCode: 400,
-        message:
-          'Please provide either an ID or an email to search for a vendor.',
-      });
+      throw new Error(
+        'Please provide either an ID or an email to search for a vendor.',
+      );
     }
 
     // Fetch the vendor from the database using either ID or email
@@ -169,11 +257,7 @@ const getAVendor = catchAsync(
 
     // If the vendor is not found, return a 404 response
     if (!result) {
-      return sendResponse(res, {
-        success: false,
-        statusCode: 404,
-        message: 'Vendor not found',
-      });
+      throw new Error('Vendor not found');
     }
 
     // If the vendor is found, return the safe vendor information with a 200 status
@@ -186,54 +270,95 @@ const getAVendor = catchAsync(
     });
   },
 );
-const updateAVendor = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const userID = req.params.id;
-    const userRowData = req.body;
-    const { passwordHash, ...updateData } = userRowData;
 
-    // Handle password update if provided
-    if (passwordHash) {
-      updateData.passwordHash = await passwordHashing(passwordHash);
-    }
+const updateAVendor = catchAsync(async (req: Request, res: Response) => {
+  const vendorID = req.params.id;
+  const updateData = req.body;
 
-    // Check if there's any data to update
-    if (!Object.keys(updateData).length) {
-      return sendResponse(res, {
-        success: false,
-        statusCode: 400,
-        message: 'No update data provided',
-      }) 
-    }
+  // Initialize update operations object
+  const updateOperations: any = {};
+  // Validate the entire update data using Zod (ensures strict validation)
+  const validatedData: any =
+    UserValidation.vendorUpdateValidation.parse(updateData);
 
-    // Validate the update data using Zod
-    const validatedData =
-      UserValidation.vendorUpdateValidation.parse(updateData);
-
-    // Update the vendor in the database
-    const updatedVendor = await VendorService.updateAVendorInToDB(
-      userID,
-      validatedData as Partial<IUser>,
-    );
-
-    // If the vendor is not found, return a 404 response
-    if (!updatedVendor) {
-      return sendResponse(res, {
-        statusCode: 404,
-        success: false,
-        message: 'Vendor not found',
-      });
-    }
-
-    // Return the updated vendor data
-    return sendResponse(res, {
-      statusCode: 200,
-      success: true,
-      message: 'Vendor updated successfully!',
-      data: updatedVendor,
+  // Handle profile data if present
+  if (validatedData.profile) {
+    Object.entries(validatedData.profile).forEach(([key, value]) => {
+      if (key === 'contactInfo' && value) {
+        // Nested contactInfo handling
+        Object.entries(value).forEach(([contactKey, contactValue]) => {
+          if (contactKey === 'contactAddress' && contactValue) {
+            // Nested contactAddress handling
+            Object.entries(contactValue).forEach(
+              ([addressKey, addressValue]) => {
+                updateOperations[
+                  `profile.contactInfo.contactAddress.${addressKey}`
+                ] = addressValue;
+              },
+            );
+          } else {
+            updateOperations[`profile.contactInfo.${contactKey}`] =
+              contactValue;
+          }
+        });
+      } else if (key === 'socialMediaLinks' && value) {
+        // Nested social media links handling
+        Object.entries(value).forEach(([socialKey, socialValue]) => {
+          updateOperations[`profile.socialMediaLinks.${socialKey}`] =
+            socialValue;
+        });
+      } else {
+        updateOperations[`profile.${key}`] = value;
+      }
     });
-  },
-);
+  }
+
+  // Handle communicationPreferences if present
+  if (validatedData.communicationPreferences) {
+    Object.entries(validatedData.communicationPreferences).forEach(
+      ([key, value]) => {
+        updateOperations[`communicationPreferences.${key}`] = value;
+      },
+    );
+  }
+
+  // Handle password update if provided
+  if (validatedData.passwordHash) {
+    updateOperations.passwordHash = await passwordHashing(
+      validatedData.passwordHash,
+    );
+  }
+
+  // Handle other primitive data
+  ['email', 'phoneNumber', 'emailVerified'].forEach(field => {
+    if (validatedData[field] !== undefined) {
+      updateOperations[field] = validatedData[field];
+    }
+  });
+
+  // Ensure that at least one update operation is present
+  if (Object.keys(updateOperations).length === 0) {
+    throw new Error('No update operations provided');
+  }
+
+  // Update the vendor in the database
+  const updatedVendor = await VendorService.updateAVendorInToDB(
+    vendorID,
+    updateOperations,
+  );
+
+  if (!updatedVendor) {
+    throw new Error('Vendor not found');
+  }
+
+  // Return the updated vendor data
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Vendor updated successfully!',
+    data: updatedVendor,
+  });
+});
 
 //! this route only for admin
 const deleteAVendor = catchAsync(
@@ -247,11 +372,7 @@ const deleteAVendor = catchAsync(
       isAdmin,
     );
     if (!deletedVendor) {
-      return sendResponse(res, {
-        statusCode: 404,
-        success: false,
-        message: 'Vendor not found',
-      });
+      throw new Error('Vendor not found');
     }
     return sendResponse(res, {
       statusCode: 200,

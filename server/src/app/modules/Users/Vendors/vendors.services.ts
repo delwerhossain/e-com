@@ -79,6 +79,7 @@ const getAVendorInToDB = async (id: string, email: string) => {
   );
   return result;
 };
+
 const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
   try {
     // Exclude fields that should not be updated
@@ -90,12 +91,12 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
       'updatedAt',
       'lastLogin',
     ];
+
     checkForSensitiveFieldUpdate(data, sensitiveFields);
 
     // Filter out sensitive fields from the data
     const updateData = filterSensitiveFields(data, sensitiveFields);
 
-    // Find and update the vendor //! For updateOne we can vendor email if we use  findByOneAndUpdate
     // Perform the update
     const updatedVendor = await UserModel.findByIdAndUpdate(
       id,
@@ -104,7 +105,7 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
         new: true,
         runValidators: true,
         select: '-passwordHash -role -isDelete -createdAt -updatedAt',
-      }, // Exclude sensitive fields
+      },
     );
 
     // Return null if the vendor is not found
@@ -117,6 +118,7 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
     throw error; // Re-throw the error to be handled by the controller
   }
 };
+
 
 //! this route only for admin
 const deleteAVendorInToDB = async (id: string, isAdmin: boolean) => {

@@ -17,7 +17,7 @@ const LastLoginSchema = z.object({
 });
 
 // Communication Preferences Schema
-const CommunicationPreferencesSchema = z.object({
+ const CommunicationPreferencesSchema = z.object({
   email: z.boolean().default(true),
   sms: z.boolean().default(true),
   pushNotifications: z.boolean().default(true),
@@ -86,9 +86,43 @@ const vendorValidation = z.object({
   communicationPreferences: CommunicationPreferencesSchema.optional(),
 });
 
+const vendorUpdateValidation = z.object({
+  email: z.string().email().optional(),
+  phoneNumber: z.string().optional(),
+  emailVerified: z.boolean().optional(),
+  passwordHash: z.string().optional(),
+  profile: z.object({
+    businessName: z.string().optional(),
+    avatarUrl: z.string().optional(),
+    description: z.string().optional(),
+    ratings: z.object({
+      averageRating: z.number().min(0).max(5).optional(),
+      reviewCount: z.number().min(0).optional(),
+    }).optional(),
+    businessCategoryID: z.string().refine(val => mongoose.Types.ObjectId.isValid(val), { message: 'Invalid business Category ID' }).optional(),
+    websiteUrl: z.string().url().optional(),
+    socialMediaLinks: z.object({
+      facebook: z.string().url().optional(),
+      twitter: z.string().url().optional(),
+      instagram: z.string().url().optional(),
+    }).optional(),
+    taxId: z.string().optional(),
+    contactInfo: z.object({
+      contactEmail: z.string().email().optional(),
+      publicPhone: z.string().optional(),
+      contactAddress: AddressSchema.optional(),
+    }).optional(),
+  }).optional(),
+  communicationPreferences: z.object({
+    email: z.boolean().optional(),
+    sms: z.boolean().optional(),
+    pushNotifications: z.boolean().optional(),
+  }).optional(),
+}).strict();
+
+
 // partial without refinement for update
 const userUpdateValidation = userValidation.partial();
-const vendorUpdateValidation = vendorValidation.partial();
 
 // Exported Validation Objects
 export const UserValidation = {
@@ -96,4 +130,8 @@ export const UserValidation = {
   userUpdateValidation, 
   vendorValidation,
   vendorUpdateValidation, 
+  CommunicationPreferencesSchema,
+  LastLoginSchema,
+  AddressSchema
+
 };
