@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { IProduct } from './product.interface';
-import { ReviewSchema } from '../Reviews/reviews.model';
 
 // Product schema definition
 const productSchema = new Schema<IProduct>(
@@ -20,33 +19,61 @@ const productSchema = new Schema<IProduct>(
       ref: 'SubCategory',
       required: false,
     },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      required: false,
+    },
     images: { type: [String], required: true },
+    color: { type: String }, // Optional color field
     isFeatured: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
     isBestProduct: { type: Boolean, default: false },
 
-    // Ratings embedded as a subdocuments
+    // Ratings embedded as a subdocument
     ratings: {
       averageRating: { type: Number, default: 0, min: 0, max: 5 },
       reviewsCount: { type: Number, default: 0 },
     },
 
-    // Optional reviews field as an array of subdocuments referencing IReviews
+    // Reviews field referencing the Review model
     reviews: {
       type: [{ type: Schema.Types.ObjectId, ref: 'Reviews' }],
       default: [],
     },
-    
+
     // Discount and pricing fields
     discountPercentage: { type: Number, default: 0 }, // Default discount 0%
-    discountedPrice: { type: Number }, // Calculated discounted price (can be handled in business logic)
+    discountedPrice: { type: Number }, // Calculated discounted price
 
     // Stock management
-    outOfStock: { type: Boolean, default: false }, // Indicate if the product is out of stock
+    outOfStock: { type: Boolean, default: false }, // Out-of-stock flag
+    restockDate: { type: String }, // Expected restock date
+
+    // Delivery-related fields
+    delivery: { type: String, enum: ['Free', 'Pay'], default: 'Pay' },
+    deliveryCharge: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: function (value: number) {
+          // Only validate deliveryCharge when delivery is 'Pay'
+          if (this.delivery === 'Pay' && (!value || value <= 0)) {
+            return false;
+          }
+          return true;
+        },
+        message: 'Delivery charge is required when delivery is Pay',
+      },
+    },
 
     // Product weight for shipping calculations
-    weight: { type: String, required: [true, 'Product weight is required'] },
+    weight: { type: String },
+    size: { type: String }, // Optional size field
+
+    // Maximum order quantity
+    maxOrderQuantity: { type: Number }, // Maximum order quantity allowed
   },
   { timestamps: true }, // Automatically handle createdAt and updatedAt
 );

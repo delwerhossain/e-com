@@ -1,24 +1,33 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { IReviews } from './reviews.interface';
 import { ReviewsModel } from './reviews.model';
 import { ProductModel } from '../Products/product.model';
 
 const createReview = async (review: IReviews) => {
+  const session = await mongoose.startSession();
   try {
+    await session.startTransaction();
     // Create a new review and save it in the database
-    const newReview = await ReviewsModel.create(review);
+    const product = await ProductModel.findById(review?.productId).session(
+      session,
+    );
+    if (!product) {
+      throw new Error(
+        "Product not found ! can't create a Review without a product",
+      );
+    }
+    // console.log(product)
+    const newReview = await ReviewsModel.create([review], { session });
 
     // Find the product by productId from the review
-    const product = await ProductModel.findById(review.productId);
-    if (!product) {
-      throw new Error('Product not found');
+    if (!newReview.length) {
+      throw new Error('Review not Created');
     }
-
     // Fetch all active reviews for the product in a single query
     const activeReviews = await ReviewsModel.find({
       productId: review.productId,
       isActive: true,
-    });
+    }).session(session);
 
     // Calculate total ratings and average rating
     const totalRatings = activeReviews.reduce(
@@ -34,12 +43,16 @@ const createReview = async (review: IReviews) => {
       averageRating: setAverageRating, // Ensure only 2 decimal places are saved
       reviewsCount: activeReviews.length,
     };
-    product.reviews?.push(newReview._id);
-    await product.save(); // Save the updated product details
+    product.reviews?.push(newReview[0]._id);
 
+    await product.save({ session }); // Save the updated product details
+    await session.commitTransaction(); //save the session
+    await session.endSession(); // end the session
     return newReview;
   } catch (error) {
-    console.error('Error creating review:', error);
+    console.error('Error creating review:');
+    session.abortTransaction(); //aborted the session if any error the review also aborted......
+    session.endSession(); // after successfully aborter the ending the session.......
     throw new Error('Could not create review. Please try again later.');
   }
 };
@@ -50,7 +63,7 @@ const getProductReviews = async (productId: Types.ObjectId) => {
   const result = await ReviewsModel.find({
     isActive: true,
     productId: productId, // Query by ObjectId
-  });
+  }).populate('reviewerId', 'productId');
   // console.log(result);
   return result; // Return the array directly, even if it's empty
 };
@@ -65,7 +78,9 @@ const bestReviews = async () => {
 // Function to get a specific review by its ID
 const getAReview = async (id: string) => {
   // Find a review by its unique ID
-  const result = await ReviewsModel.findById(id);
+  const result = await ReviewsModel.findById(id)
+    .populate('reviewerId')
+    .populate('productId');
   if (!result) {
     return { Not_found: 'Review not found' };
   }

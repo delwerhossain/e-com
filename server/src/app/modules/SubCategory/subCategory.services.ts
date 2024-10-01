@@ -9,13 +9,16 @@ const createSubCategory = async (subCategory: ISubCategory) => {
 
 // Fetch all active subcategories
 const getSubCategories = async () => {
-  const result = await SubCategoryModel.find({ isActive: true });
+  const result = await SubCategoryModel.find({ isActive: true }).populate(
+    'categoryId',
+  );
   return result;
 };
 
 // Fetch a subcategory by ID with active status check
 const getASubCategory = async (id: string) => {
-  const subCategory = await SubCategoryModel.findById(id);
+  const subCategory =
+    await SubCategoryModel.findById(id).populate('categoryId');
 
   if (!subCategory) {
     return { Not_found: 'Subcategory not found' };
@@ -76,7 +79,7 @@ const deleteASubCategory = async (id: string) => {
 const getInActiveSubcategory = async () => {
   const result = await SubCategoryModel.find({
     isActive: false,
-  });
+  }).populate('categoryId');
   return result;
 };
 
