@@ -3,7 +3,6 @@ import { IProduct } from './product.interface';
 import { ProductModel } from './product.model';
 import { ProductUpdateValidation } from './product.validation';
 import { UserModel } from '../Users/users.model';
-import { error } from 'console';
 
 const getProducts = async () => {
   const result = await ProductModel.find({ isActive: true }, {}).populate(
@@ -69,6 +68,7 @@ const isActiveProduct = async (id: string, status: boolean) => {
   return result;
 };
 
+//!update with permeative and non permeative fields
 const updateAProduct = async (id: string, productData: Partial<IProduct>) => {
   const validatedData = ProductUpdateValidation.parse(productData);
   const { images, ratings, reviews, ...primitiveData } = validatedData;
