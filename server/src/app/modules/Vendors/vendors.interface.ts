@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 // Address Interface
 export interface IAddress {
   street?: string;
@@ -20,26 +22,42 @@ export interface ICommunicationPreferences {
   pushNotifications: boolean;
 }
 
-// User Profile Interface
-export interface IUserProfile {
-  name: string;
+
+
+// Vendor Profile Interface
+export interface IVendorProfile {
+  businessName: string;
   avatarUrl?: string;
-  shippingAddress?: IAddress;
-  billingAddress?: IAddress;
-  dateOfBirth?: Date | string;
-  gender?: 'male' | 'female' | 'other';
+  description?: string;
+  ratings?: {
+    averageRating: number;
+    reviewCount: number;
+  };
+  businessCategoryID?: Types.ObjectId;
+  websiteUrl?: string;
+  socialMediaLinks?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  };
+  taxId?: string;
+  contactInfo?: {
+    contactEmail?: string;
+    publicPhone?: string;
+    contactAddress?: IAddress;
+  };
 }
 
-// User Interface
-export interface IUser {
+// Vendor Interface
+export interface IVendor {
   email: string;
   phoneNumber?: string;
   emailVerified?: boolean;
   passwordHash: string;
-  role: 'user';
+  role: 'vendor';
   isDelete?: boolean;
   isActive?: boolean;
   lastLogin?: ILoginDetails;
-  profile?: IUserProfile; // Conditional profile based on role
+  profile?: IVendorProfile; // Conditional profile based on role
   communicationPreferences?: ICommunicationPreferences;
 }

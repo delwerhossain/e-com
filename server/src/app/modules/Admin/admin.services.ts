@@ -36,6 +36,7 @@ const getAllAdminInToDB = async (
     total,
   };
 };
+
 const getAdminInToDB = async (id: string, email: string) => {
   try {
     const searchCriteria = buildSearchCriteria(id, email);

@@ -4,9 +4,9 @@ import {
   IAddress,
   ICommunicationPreferences,
   ILoginDetails,
-  IUser,
-  IUserProfile,
-} from './users.interface';
+  IVendor,
+  IVendorProfile,
+} from './vendors.interface';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -27,14 +27,33 @@ const LastLoginSchema = new Schema<ILoginDetails>({
   ip: { type: String },
 });
 
-// User Profile Schema
-export const UserProfileSchema = new Schema<IUserProfile>({
-  name: { type: String, trim: true },
+
+// Vendor Profile Schema
+export const VendorProfileSchema = new Schema<IVendorProfile>({
+  businessName: { type: String, required: true, trim: true },
   avatarUrl: { type: String, trim: true },
-  shippingAddress: AddressSchema,
-  billingAddress: AddressSchema,
-  dateOfBirth: { type: Date },
-  gender: { type: String, enum: ['male', 'female', 'other'] },
+  description: { type: String, trim: true },
+  ratings: {
+    averageRating: { type: Number, default: 0 },
+    reviewCount: { type: Number, default: 0 },
+  },
+  businessCategoryID: {
+    type: Schema.Types.ObjectId,
+    ref: 'Category',
+    trim: true,
+  },
+  websiteUrl: { type: String, trim: true },
+  socialMediaLinks: {
+    facebook: { type: String, trim: true },
+    twitter: { type: String, trim: true },
+    instagram: { type: String, trim: true },
+  },
+  taxId: { type: String, trim: true },
+  contactInfo: {
+    contactEmail: { type: String, trim: true },
+    publicPhone: { type: String, trim: true },
+    contactAddress: AddressSchema,
+  },
 });
 
 // Communication Preferences Schema
@@ -45,10 +64,9 @@ export const CommunicationPreferencesSchema =
     pushNotifications: { type: Boolean, default: true },
   });
 
-// User Schema
 
-// User Schema
-const UserSchema = new Schema<IUser>(
+
+const VendorSchema = new Schema<IVendor>(
   {
     email: {
       type: String,
@@ -69,8 +87,8 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['user'],
-      default: 'user',
+      enum:['vendor'],
+      default: 'vendor',
     },
     isDelete: {
       type: Boolean,
@@ -81,7 +99,7 @@ const UserSchema = new Schema<IUser>(
       default: true,
     },
     lastLogin: LastLoginSchema,
-    profile: UserProfileSchema,
+    profile: VendorProfileSchema,
     communicationPreferences: CommunicationPreferencesSchema,
   },
   {
@@ -89,32 +107,34 @@ const UserSchema = new Schema<IUser>(
   },
 );
 
-//! if user isDeleted is true then it will not be displayed , if admin request then it will be displayed
+//! if vendor isDeleted is true then it will not be displayed , if admin request then it will be displayed
 // Pre-hook for 'find'
-UserSchema.pre<Query<any, any>>('find', function (next) {
+VendorSchema.pre<Query<any, any>>('find', function (next) {
   const queryOptions = this.getOptions();
 
   // Check if the requester is not an admin
   if (!queryOptions?.isAdmin) {
-    // Exclude users with isDelete: true for non-admins
+    // Exclude vendors with isDelete: true for non-admins
     this.where({ isDelete: { $ne: true } });
   }
   next();
 });
 // // Pre-hook for 'save'
-// UserSchema.pre<Query<any, any>>('save', function (next) {
+// VendorSchema.pre<Query<any, any>>('save', function (next) {
 //   const queryOptions = this.getOptions();
 
 //   // Check if the requester is not an admin
 //   if (!queryOptions?.isAdmin) {
-//     // Exclude users with isDelete: true for non-admins
+//     // Exclude vendors with isDelete: true for non-admins
 //     this.where({ isDelete: { $ne: true } });
 //   }
 //   next();
 // });
 
+
+
 // Pre-hook for 'findOne'
-UserSchema.pre<Query<any, any>>('findOne', function (next) {
+VendorSchema.pre<Query<any, any>>('findOne', function (next) {
   const queryOptions = this.getOptions();
 
   if (!queryOptions?.isAdmin) {
@@ -124,7 +144,7 @@ UserSchema.pre<Query<any, any>>('findOne', function (next) {
 });
 
 // Pre-hook for 'findOneAndUpdate'
-UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
+VendorSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
   const queryOptions = this.getOptions();
 
   if (!queryOptions?.isAdmin) {
@@ -134,7 +154,7 @@ UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
 });
 
 // Pre-hook for 'updateOne' (instead of 'update')
-UserSchema.pre<Query<any, any>>('updateOne', function (next) {
+VendorSchema.pre<Query<any, any>>('updateOne', function (next) {
   const queryOptions = this.getOptions();
 
   if (!queryOptions?.isAdmin) {
@@ -144,7 +164,7 @@ UserSchema.pre<Query<any, any>>('updateOne', function (next) {
 });
 
 // Pre-hook for 'updateMany'
-UserSchema.pre<Query<any, any>>('updateMany', function (next) {
+VendorSchema.pre<Query<any, any>>('updateMany', function (next) {
   const queryOptions = this.getOptions();
 
   if (!queryOptions?.isAdmin) {
@@ -154,7 +174,7 @@ UserSchema.pre<Query<any, any>>('updateMany', function (next) {
 });
 
 // Apply transformation for `dateOfBirth` when converting to JSON
-UserSchema.set('toJSON', {
+VendorSchema.set('toJSON', {
   transform: function (doc, ret) {
     // Format the dateOfBirth field as "YYYY-MM-DD"
     if (ret.profile && ret.profile.dateOfBirth) {
@@ -167,7 +187,7 @@ UserSchema.set('toJSON', {
 });
 
 //**** Date Time Zone *******
-// UserSchema.set('timestamps', {
+// VendorSchema.set('timestamps', {
 //   currentTime: () => {
 //     // Create a new Date object with the desired time zone offset (Asia/Dhaka)
 //     const bangladeshTime = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
@@ -176,9 +196,9 @@ UserSchema.set('toJSON', {
 // });
 
 //! for pass if need
-// UserSchema.pre('save', function (next:NextFunction) {
+// VendorSchema.pre('save', function (next:NextFunction) {
 //   this.set('passwordHash', undefined, { strict: false });
 //   next();
 // });
 
-export const UserModel = model<IUser>('User', UserSchema);
+export const VendorModel = model<IVendor>('Vendor', VendorSchema);

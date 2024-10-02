@@ -1,9 +1,9 @@
 import {
   checkForSensitiveFieldUpdate,
   filterSensitiveFields,
-} from '../../../../helpers/validation';
-import { IUser } from '../users.interface';
-import { UserModel } from '../users.model';
+} from '../../../helpers/validation';
+import { IVendor } from './vendors.interface';
+import { VendorModel } from './vendors.model';
 
 //! this route only for admin
 const getAllVendorsInToDB = async (
@@ -31,12 +31,12 @@ const getAllVendorsInToDB = async (
   ];
 
   // Execute the aggregation pipeline
-  const result = await UserModel.aggregate(aggregationPipeline, {
+  const result = await VendorModel.aggregate(aggregationPipeline, {
     allowDiskUse: true,
   });
 
   // Get the total count of documents matching the filter
-  const total = await UserModel.countDocuments(filter);
+  const total = await VendorModel.countDocuments(filter);
 
   // Return data and total count
   return { data: result, total };
@@ -45,7 +45,7 @@ const getAllVendorsInToDB = async (
 const createVendorInToDB = async (data: any) => {
   try {
     // Create the vendor in the database
-    const createData = await UserModel.create(data);
+    const createData = await VendorModel.create(data);
 
     const result = {
       email: createData.email,
@@ -74,13 +74,13 @@ const getAVendorInToDB = async (id: string, email: string) => {
   // if vendor isDeleted is true then it will not be displayed
 
   // Find the vendor by either ID or email, excluding the password hash and other sensitive fields
-  const result = await UserModel.findOne(searchCriteria).select(
+  const result = await VendorModel.findOne(searchCriteria).select(
     '-passwordHash -isDelete -isActive -__v -createdAt -updatedAt',
   );
   return result;
 };
 
-const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
+const updateAVendorInToDB = async (id: string, data: Partial<IVendor>) => {
   try {
     // Exclude fields that should not be updated
     const sensitiveFields = [
@@ -98,7 +98,7 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
     const updateData = filterSensitiveFields(data, sensitiveFields);
 
     // Perform the update
-    const updatedVendor = await UserModel.findByIdAndUpdate(
+    const updatedVendor = await VendorModel.findByIdAndUpdate(
       id,
       { $set: updateData },
       {
@@ -119,13 +119,12 @@ const updateAVendorInToDB = async (id: string, data: Partial<IUser>) => {
   }
 };
 
-
 //! this route only for admin
 const deleteAVendorInToDB = async (id: string, isAdmin: boolean) => {
   try {
     if (isAdmin) {
       // Use findByIdAndUpdate to directly search and update the vendor
-      const deletedVendor = await UserModel.findByIdAndUpdate(
+      const deletedVendor = await VendorModel.findByIdAndUpdate(
         id,
         { $set: { isDelete: true } }, // Mark as deleted (true)
         { new: true },
@@ -155,7 +154,7 @@ const vendorLastLoginInToDB = async (
     timestamp: new Date(),
     ip,
   };
-  const updatedVendor = await UserModel.findByIdAndUpdate(
+  const updatedVendor = await VendorModel.findByIdAndUpdate(
     id,
     { $set: { lastLogin: lastLogin } },
     { new: true },
