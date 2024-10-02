@@ -5,21 +5,28 @@ import { ProductUpdateValidation } from './product.validation';
 import { UserModel } from '../Users/users.model';
 
 const getProducts = async (query: Record<string, unknown>) => {
-
-  let searchTerm = ''
+  let searchTerm = '';
   if (query?.searchTerm) {
-    searchTerm = query.searchTerm as string
+    searchTerm = query.searchTerm as string;
   }
-  const searchableFields = ["name", "color", "categoryName", "subcategoryName", "size"]
-  const result = await ProductModel.find({
-    isActive: true,
-    $or: searchableFields.map((field) => ({
-      [field]: { $regex: searchTerm }
-    })
-    )
-  }).populate(
-    'reviews',
-  );
+  const searchableFields = [
+    'name',
+    'color',
+    'description',
+    'categoryName',
+    'subcategoryName',
+    'size',
+  ];
+  const filterActive: Record<string, unknown> = {
+    $or: searchableFields.map(field => ({
+      [field]: { $regex: searchTerm, $options: 'i' },
+    })),
+  };
+  if (query?.isActive === 'true' || query?.isActive === 'false') {
+    filterActive.isActive = query?.isActive;
+  }
+
+  const result = await ProductModel.find(filterActive).populate('reviews');
   return result;
 };
 
@@ -33,13 +40,22 @@ const getSingleProduct = async (id: string) => {
   // console.log(result, 'line 28');
   return result;
 };
-const getVendorAllProducts = async (vendorId: string) => {
+const getVendorAllProducts = async (
+  vendorId: string,
+  query: Record<string, unknown>,
+) => {
   const validateVendor = await UserModel.findById(vendorId);
   if (!validateVendor) {
     throw new Error('No Vendor Found With Provided ID');
   }
+  let filterActive: Record<string, unknown> = { vendorId };
+
+  if (query.isActive === 'true' || query.isActive === 'false') {
+    filterActive.isActive = query?.isActive;
+  }
+
   // Find the product by ID and populate reviews
-  let result = await ProductModel.find({ vendorId }).populate('reviews');
+  const result = await ProductModel.find(filterActive).populate('reviews');
 
   if (!result.length) {
     return { not_found: 'No product found for this vendor' };

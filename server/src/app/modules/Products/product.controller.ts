@@ -19,9 +19,9 @@ const getProducts: RequestHandler = async (req, res, next) => {
 
 const getVendorAllProducts: RequestHandler = async (req, res, next) => {
   const vendorId = req.params.id;
-  console.log(vendorId)
+  const query = req.query
   try {
-    const result = await ProductServices.getVendorAllProducts(vendorId);
+    const result = await ProductServices.getVendorAllProducts(vendorId,query);
     res.status(200).json({
       success: true,
       message: "Vendor's All Products fetched successfully",
