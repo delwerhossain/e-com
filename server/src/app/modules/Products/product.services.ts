@@ -56,11 +56,23 @@ const getVendorAllProducts = async (
   if (!validateVendor) {
     throw new Error('No Vendor Found With Provided ID');
   }
+  let searchTerm = '';
   let filterActive: Record<string, unknown> = { vendorId };
-
+  if (query.searchTerm) {
+    searchTerm = query.searchTerm as string;
+  }
   if (query.isActive === 'true' || query.isActive === 'false') {
     filterActive.isActive = query?.isActive;
   }
+
+  const filterFields = [
+    'name',
+    'color',
+    'description',
+    'categoryName',
+    'subcategoryName',
+    'size',
+  ];
 
   // Find the product by ID and populate reviews
   const result = await ProductModel.find(filterActive).populate('reviews');
