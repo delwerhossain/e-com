@@ -36,7 +36,7 @@ const getVendorAllProducts: RequestHandler = async (req, res, next) => {
 const getSingleProduct: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params; // Extract product ID from route params
-    const result = await ProductServices.getSingleProduct(id);
+    const result = await ProductServices.getSingleProduct(id,req.query);
     res.status(200).json({
       success: true,
       message: 'Product fetched successfully',

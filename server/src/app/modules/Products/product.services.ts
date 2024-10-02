@@ -4,6 +4,7 @@ import { ProductModel } from './product.model';
 import { ProductUpdateValidation } from './product.validation';
 import { UserModel } from '../Users/users.model';
 
+//!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true -if no isActive and SearchTerm all products will show
 const getProducts = async (query: Record<string, unknown>) => {
   let searchTerm = '';
   if (query?.searchTerm) {
@@ -30,9 +31,16 @@ const getProducts = async (query: Record<string, unknown>) => {
   return result;
 };
 
-const getSingleProduct = async (id: string) => {
+const getSingleProduct = async (
+  _id: string,
+  query: Record<string, unknown>,
+) => {
   // Find the product by ID and populate reviews
-  const result = await ProductModel.findById(id).populate('reviews');
+  const filter: Record<string, unknown> = { _id };
+  if (query?.isActive === 'true' || query?.isActive === 'false') {
+    filter.isActive = query?.isActive;
+  }
+  const result = await ProductModel.find(filter).populate('reviews');
 
   if (!result) {
     return { not_found: 'Product Not Found' };
