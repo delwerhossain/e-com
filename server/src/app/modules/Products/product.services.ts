@@ -6,10 +6,7 @@ import { UserModel } from '../Users/users.model';
 
 //!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true -if no isActive and SearchTerm all products will show
 const getProducts = async (query: Record<string, unknown>) => {
-  let searchTerm = '';
-  if (query?.searchTerm) {
-    searchTerm = query.searchTerm as string;
-  }
+  let searchTerm = query.searchTerm ? query.searchTerm : '';
   const searchableFields = [
     'name',
     'color',
@@ -48,6 +45,8 @@ const getSingleProduct = async (
   // console.log(result, 'line 28');
   return result;
 };
+
+//! -if no isActive and SearchTerm all products will show
 const getVendorAllProducts = async (
   vendorId: string,
   query: Record<string, unknown>,
@@ -56,14 +55,7 @@ const getVendorAllProducts = async (
   if (!validateVendor) {
     throw new Error('No Vendor Found With Provided ID');
   }
-  let searchTerm = '';
-  let filterActive: Record<string, unknown> = { vendorId };
-  if (query.searchTerm) {
-    searchTerm = query.searchTerm as string;
-  }
-  if (query.isActive === 'true' || query.isActive === 'false') {
-    filterActive.isActive = query?.isActive;
-  }
+  let searchTerm = query.searchTerm ? query.searchTerm : '';
 
   const filterFields = [
     'name',
@@ -73,6 +65,15 @@ const getVendorAllProducts = async (
     'subcategoryName',
     'size',
   ];
+  let filterActive: Record<string, unknown> = {
+    vendorId,
+    $or: filterFields.map(field => ({
+      [field]: { $regex: { searchTerm, $options: 'i' } },
+    })),
+  };
+  if (query.isActive === 'true' || query.isActive === 'false') {
+    filterActive.isActive = query?.isActive;
+  }
 
   // Find the product by ID and populate reviews
   const result = await ProductModel.find(filterActive).populate('reviews');
