@@ -3,6 +3,7 @@ import { IAdmin } from '../app/modules/Admin/admin.interface';
 import sendResponse from '../shared/sendResponse';
 import { Response } from 'express';
 import { IUser } from '../app/modules/Users/users.interface';
+import { IVendor } from '../app/modules/Vendors/vendors.interface';
 
 // Utility function to validate email format
 export const isValidEmail = (email: string) => {
@@ -13,7 +14,7 @@ export const isValidEmail = (email: string) => {
 // Utility function to check for sensitive field updates
 // this function can use for admin and user
 export const checkForSensitiveFieldUpdate = (
-  data: Partial<IAdmin> | Partial<IUser>,
+  data: Partial<IAdmin> | Partial<IUser> | Partial<IVendor>,
   sensitiveFields: string[],
 ) => {
   const attemptedSensitiveFields = Object.keys(data).filter(field =>
@@ -29,7 +30,7 @@ export const checkForSensitiveFieldUpdate = (
 
 // New function to filter out sensitive fields from the data
 export const filterSensitiveFields = (
-  data: Partial<IAdmin> | Partial<IUser>,
+  data: Partial<IAdmin> | Partial<IUser> | Partial<IVendor>,
   sensitiveFields: string[],
 ) => {
   return Object.fromEntries(
