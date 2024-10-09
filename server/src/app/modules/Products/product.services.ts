@@ -4,7 +4,7 @@ import { ProductModel } from './product.model';
 import { ProductUpdateValidation } from './product.validation';
 import { UserModel } from '../Users/users.model';
 
-//!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true -if no isActive and SearchTerm all products will show
+//!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true&category=electronics -if no isActive and SearchTerm will show all products
 const getProducts = async (query: Record<string, unknown>) => {
   let searchTerm = query.searchTerm ? query.searchTerm : '';
   const searchableFields = [
@@ -22,6 +22,9 @@ const getProducts = async (query: Record<string, unknown>) => {
   };
   if (query?.isActive === 'true' || query?.isActive === 'false') {
     filterActive.isActive = query?.isActive;
+  }
+  if (query?.category) {
+    filterActive.categoryName = query?.category;
   }
 
   const result = await ProductModel.find(filterActive).populate('reviews');
@@ -179,6 +182,7 @@ const deleteProduct = async (id: string) => {
   return result;
 };
 
+
 export const ProductServices = {
   getProducts,
   getBestProducts,
@@ -190,4 +194,5 @@ export const ProductServices = {
   updateAProduct,
   deleteProduct,
   getVendorAllProducts,
+
 };

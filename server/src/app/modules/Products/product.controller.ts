@@ -151,6 +151,7 @@ const deleteProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
+
 // Export all the controllers
 export const ProductController = {
   getProducts, // Get all active products
@@ -163,4 +164,5 @@ export const ProductController = {
   isActiveProduct, // Toggle product active status
   updateAProduct, // Update product fields
   deleteProduct, // Delete a product by ID
+  
 };
