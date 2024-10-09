@@ -77,6 +77,9 @@ const getVendorAllProducts = async (
   if (query.isActive === 'true' || query.isActive === 'false') {
     filterActive.isActive = query?.isActive;
   }
+  if (query?.category) {
+    filterActive.categoryName = query?.category;
+  }
 
   // Find the product by ID and populate reviews
   const result = await ProductModel.find(filterActive).populate('reviews');
