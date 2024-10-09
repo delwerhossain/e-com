@@ -123,6 +123,13 @@ UserSchema.pre<Query<any, any>>('findOne', function (next) {
   next();
 });
 
+// Pre-hook for aggregate for delete data validation
+//! TODO need update for admin , can check deleted user 
+UserSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+  next();
+});
+
 // Pre-hook for 'findOneAndUpdate'
 UserSchema.pre<Query<any, any>>('findOneAndUpdate', function (next) {
   const queryOptions = this.getOptions();
