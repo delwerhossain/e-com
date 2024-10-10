@@ -6,7 +6,9 @@ import { UserModel } from '../Users/users.model';
 
 //!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true&category=electronics -if no isActive and SearchTerm will show all products
 const getProducts = async (query: Record<string, unknown>) => {
-  let searchTerm = query.searchTerm ? query.searchTerm : '';
+  let searchTerm = query?.searchTerm ? query.searchTerm : '';
+  let sortItem = query?.sort?query.sort:'-createdAt' 
+  console.log(sortItem)
   const searchableFields = [
     'name',
     'color',
@@ -27,7 +29,10 @@ const getProducts = async (query: Record<string, unknown>) => {
     filterActive.categoryName = query?.category;
   }
 
-  const result = await ProductModel.find(filterActive).populate('reviews');
+
+
+
+  const result = await ProductModel.find(filterActive).populate('reviews').sort(sortItem as string);
   return result;
 };
 
