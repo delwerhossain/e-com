@@ -8,8 +8,9 @@ import { UserModel } from '../Users/users.model';
 const getProducts = async (query: Record<string, unknown>) => {
   let searchTerm = query?.searchTerm ? query.searchTerm : '';
   let sortItem = query?.sort ? query.sort : '-createdAt';
+  const limitData = query?.limit ? query.limit : 10;
   const excludedQuery = { ...query };
-  const filterFields = ['searchTerm'];
+  const filterFields = ['searchTerm', 'sort', 'limit'];
 
   const searchableFields = [
     'name',
@@ -22,8 +23,6 @@ const getProducts = async (query: Record<string, unknown>) => {
   //Base Filter
   filterFields.forEach(element => delete excludedQuery[element]);
 
-  console.log(excludedQuery);
-
   //search Func
   const filterActive: Record<string, unknown> = {
     $or: searchableFields.map(field => ({
@@ -32,10 +31,10 @@ const getProducts = async (query: Record<string, unknown>) => {
     ...excludedQuery, //add the filtering values..........
   };
 
-  console.log(filterActive);
   const result = await ProductModel.find(filterActive)
     .populate('reviews')
-    .sort(sortItem as string);
+    .sort(sortItem as string)
+    .limit(limitData as number);
   return result;
 };
 
