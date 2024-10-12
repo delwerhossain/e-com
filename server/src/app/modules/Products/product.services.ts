@@ -11,9 +11,12 @@ const getProducts = async (query: Record<string, unknown>) => {
   const limitData = query?.limit ? Number(query.limit) : 10;
   const page = query?.page ? Number(query.page) : 1;
   const paginateQuery = (page - 1) * limitData;
+  const  fields = query?.fields
+    ? (query.fields as string).split(',').join(' ')
+    : '-__v ';
 
   const excludedQuery = { ...query };
-  const filterFields = ['searchTerm', 'sort', 'limit', 'page'];
+  const filterFields = ['searchTerm', 'sort', 'limit', 'page', 'fields'];
 
   const searchableFields = [
     'name',
@@ -39,7 +42,8 @@ const getProducts = async (query: Record<string, unknown>) => {
     .populate('reviews')
     .sort(sortItem as string)
     .limit(limitData as number)
-    .skip(paginateQuery);
+    .skip(paginateQuery)
+    .select(fields ? fields : {});
   return result;
 };
 
