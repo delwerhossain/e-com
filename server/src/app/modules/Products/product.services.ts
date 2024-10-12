@@ -6,11 +6,14 @@ import { UserModel } from '../Users/users.model';
 
 //!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true&category=electronics -if no isActive and SearchTerm will show all products
 const getProducts = async (query: Record<string, unknown>) => {
-  let searchTerm = query?.searchTerm ? query.searchTerm : '';
-  let sortItem = query?.sort ? query.sort : '-createdAt';
-  const limitData = query?.limit ? query.limit : 10;
+  const searchTerm = query?.searchTerm ? query.searchTerm : '';
+  const sortItem = query?.sort ? query.sort : '-createdAt';
+  const limitData = query?.limit ? Number(query.limit) : 10;
+  const page = query?.page ? Number(query.page) : 1;
+  const paginateQuery = (page - 1) * limitData;
+
   const excludedQuery = { ...query };
-  const filterFields = ['searchTerm', 'sort', 'limit'];
+  const filterFields = ['searchTerm', 'sort', 'limit', 'page'];
 
   const searchableFields = [
     'name',
@@ -20,6 +23,7 @@ const getProducts = async (query: Record<string, unknown>) => {
     'subcategoryName',
     'size',
   ];
+
   //Base Filter
   filterFields.forEach(element => delete excludedQuery[element]);
 
@@ -34,7 +38,8 @@ const getProducts = async (query: Record<string, unknown>) => {
   const result = await ProductModel.find(filterActive)
     .populate('reviews')
     .sort(sortItem as string)
-    .limit(limitData as number);
+    .limit(limitData as number)
+    .skip(paginateQuery);
   return result;
 };
 
@@ -66,7 +71,11 @@ const getVendorAllProducts = async (
     throw new Error('No Vendor Found With Provided ID');
   }
   let searchTerm = query.searchTerm ? query.searchTerm : '';
-
+  const limitData = query?.limit ? Number(query.limit) : 10;
+  const page = query?.page ? Number(query.page) : 1;
+  const paginateQuery = (page - 1) * limitData;
+  const excludedQuery = { ...query };
+  const excludedFields = ['searchTerm', 'sort', 'limit'];
   const filterFields = [
     'name',
     'color',
@@ -75,21 +84,19 @@ const getVendorAllProducts = async (
     'subcategoryName',
     'size',
   ];
+  excludedFields.forEach(element => delete excludedQuery[element]);
   let filterActive: Record<string, unknown> = {
     vendorId,
     $or: filterFields.map(field => ({
       [field]: { $regex: { searchTerm, $options: 'i' } },
     })),
+    ...excludedQuery,
   };
-  if (query.isActive === 'true' || query.isActive === 'false') {
-    filterActive.isActive = query?.isActive;
-  }
-  if (query?.category) {
-    filterActive.categoryName = query?.category;
-  }
 
   // Find the product by ID and populate reviews
-  const result = await ProductModel.find(filterActive).populate('reviews');
+  const result = await ProductModel.find(filterActive)
+    .populate('reviews')
+    .skip(paginateQuery);
 
   if (!result.length) {
     return { not_found: 'No product found for this vendor' };
