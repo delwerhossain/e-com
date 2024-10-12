@@ -21,4 +21,4 @@ export const categoryValidation = z.object({
     })
     .url('Invalid URL format for Category image')
     .nonempty({ message: 'URL cant be empty' }),
-});
+}).strict();

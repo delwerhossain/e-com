@@ -33,8 +33,9 @@ export const ProductValidation = z
     subCategoryId: objectIdSchema.optional(),
     categoryId: objectIdSchema.optional(),
     images: z.union([z.array(z.string()), z.string()]),
-
     color: z.string().optional(),
+    categoryName: z.string(),
+    subcategoryName: z.string().optional(),
     isFeatured: z.boolean().default(false),
     isActive: z.boolean().default(true),
     isDeleted: z.boolean().default(false),
@@ -66,7 +67,7 @@ export const ProductValidation = z
     weight: z.string().min(1, { message: 'Weight is required' }).optional(),
     size: z.string().optional(),
     maxOrderQuantity: z.number().min(1).optional(),
-  })
+  }).strict()
   .superRefine((data, ctx) => {
     // Conditional validation for deliveryCharge
     if (data.delivery === 'Pay' && data.deliveryCharge === undefined) {

@@ -2,6 +2,7 @@ import { ICategory } from './categories.interface';
 import { CategoryModel } from './categories.model';
 
 const createCategory = async (category: ICategory) => {
+  
   const result = await CategoryModel.create(category);
   return result;
 };
