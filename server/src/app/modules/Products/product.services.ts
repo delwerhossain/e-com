@@ -11,7 +11,7 @@ const getProducts = async (query: Record<string, unknown>) => {
   const limitData = query?.limit ? Number(query.limit) : 10;
   const page = query?.page ? Number(query.page) : 1;
   const paginateQuery = (page - 1) * limitData;
-  const  fields = query?.fields
+  const fields = query?.fields
     ? (query.fields as string).split(',').join(' ')
     : '-__v ';
 
@@ -76,6 +76,7 @@ const getVendorAllProducts = async (
   }
   let searchTerm = query.searchTerm ? query.searchTerm : '';
   const limitData = query?.limit ? Number(query.limit) : 10;
+  const sortItem = query?.sort ? query.sort : '-createdAt';
   const page = query?.page ? Number(query.page) : 1;
   const paginateQuery = (page - 1) * limitData;
   const excludedQuery = { ...query };
@@ -89,6 +90,10 @@ const getVendorAllProducts = async (
     'size',
   ];
   excludedFields.forEach(element => delete excludedQuery[element]);
+  const fields = query?.fields
+    ? (query.fields as string).split(',').join(' ')
+    : '-__v ';
+
   let filterActive: Record<string, unknown> = {
     vendorId,
     $or: filterFields.map(field => ({
@@ -100,7 +105,10 @@ const getVendorAllProducts = async (
   // Find the product by ID and populate reviews
   const result = await ProductModel.find(filterActive)
     .populate('reviews')
-    .skip(paginateQuery);
+    .skip(paginateQuery)
+    .select(fields)
+    .sort(sortItem as string)
+    .limit(limitData as number);
 
   if (!result.length) {
     return { not_found: 'No product found for this vendor' };
