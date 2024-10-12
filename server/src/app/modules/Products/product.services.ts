@@ -7,8 +7,10 @@ import { UserModel } from '../Users/users.model';
 //!http://localhost:5000/api/v1/product?searchTerm=test&isActive=true&category=electronics -if no isActive and SearchTerm will show all products
 const getProducts = async (query: Record<string, unknown>) => {
   let searchTerm = query?.searchTerm ? query.searchTerm : '';
-  let sortItem = query?.sort?query.sort:'-createdAt' 
-  console.log(sortItem)
+  let sortItem = query?.sort ? query.sort : '-createdAt';
+  const excludedQuery = { ...query };
+  const filterFields = ['searchTerm'];
+
   const searchableFields = [
     'name',
     'color',
@@ -17,22 +19,23 @@ const getProducts = async (query: Record<string, unknown>) => {
     'subcategoryName',
     'size',
   ];
+  //Base Filter
+  filterFields.forEach(element => delete excludedQuery[element]);
+
+  console.log(excludedQuery);
+
+  //search Func
   const filterActive: Record<string, unknown> = {
     $or: searchableFields.map(field => ({
       [field]: { $regex: searchTerm, $options: 'i' },
     })),
+    ...excludedQuery, //add the filtering values..........
   };
-  if (query?.isActive === 'true' || query?.isActive === 'false') {
-    filterActive.isActive = query?.isActive;
-  }
-  if (query?.category) {
-    filterActive.categoryName = query?.category;
-  }
 
-
-
-
-  const result = await ProductModel.find(filterActive).populate('reviews').sort(sortItem as string);
+  console.log(filterActive);
+  const result = await ProductModel.find(filterActive)
+    .populate('reviews')
+    .sort(sortItem as string);
   return result;
 };
 
@@ -190,7 +193,6 @@ const deleteProduct = async (id: string) => {
   return result;
 };
 
-
 export const ProductServices = {
   getProducts,
   getBestProducts,
@@ -202,7 +204,4 @@ export const ProductServices = {
   updateAProduct,
   deleteProduct,
   getVendorAllProducts,
-
 };
-
-
