@@ -112,5 +112,5 @@ export const SubCategoryControllers = {
   isActiveSubCategory,
   updateASubCategory,
   deleteASubCategory,
-  getInActiveSubCategories
+  getInActiveSubCategories,
 };

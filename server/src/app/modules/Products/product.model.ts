@@ -1,5 +1,3 @@
-
-
 //!new Model
 
 import { Schema, model } from 'mongoose';
@@ -115,7 +113,8 @@ const productSchema = new Schema<IProduct>(
           }
           return true;
         },
-        message: 'Delivery charge is required and must be greater than 0 when delivery is "Pay".',
+        message:
+          'Delivery charge is required and must be greater than 0 when delivery is "Pay".',
       },
     },
 

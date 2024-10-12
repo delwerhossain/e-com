@@ -10,6 +10,6 @@ router.post('/new', VendorController.createVendor); // Create a new user //* ven
 router.patch('/:id', VendorController.updateAVendor); // Update specific user fields //* vendor + admin + super admin
 router.delete('/:id', VendorController.deleteAVendor); // Delete a user by ID //! admin + super admin
 
-router.get('/last-login/:id', VendorController.vendorLastLogin); // Update specific last login details 
+router.get('/last-login/:id', VendorController.vendorLastLogin); // Update specific last login details
 
 export const vendorRoutes = router;

@@ -67,7 +67,8 @@ export const ProductValidation = z
     weight: z.string().min(1, { message: 'Weight is required' }).optional(),
     size: z.string().optional(),
     maxOrderQuantity: z.number().min(1).optional(),
-  }).strict()
+  })
+  .strict()
   .superRefine((data, ctx) => {
     // Conditional validation for deliveryCharge
     if (data.delivery === 'Pay' && data.deliveryCharge === undefined) {

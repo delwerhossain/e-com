@@ -7,7 +7,7 @@ import config from '../../config';
 import { IAdmin, ICreateAdminInput } from './admin.interface';
 import { AdminValidation } from './admin.validation';
 import { passwordHashing } from '../../../helpers/passHandle';
-import {  validateIdOrEmail } from '../../../helpers/validation';
+import { validateIdOrEmail } from '../../../helpers/validation';
 
 const getAllAdmins: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
