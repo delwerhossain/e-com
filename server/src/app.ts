@@ -4,10 +4,11 @@ import router from './routes';
 import notFound from './middlewares/notFound';
 import globalErrorHandler from './middlewares/globalErrorhandler';
 
-
 export const app: Application = express();
+//parsers
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
 
 app.use('/api/v1', router);
 app.get('/', (req: Request, res: Response) => {
