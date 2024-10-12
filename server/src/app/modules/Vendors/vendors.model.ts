@@ -27,7 +27,6 @@ const LastLoginSchema = new Schema<ILoginDetails>({
   ip: { type: String },
 });
 
-
 // Vendor Profile Schema
 export const VendorProfileSchema = new Schema<IVendorProfile>({
   businessName: { type: String, required: true, trim: true },
@@ -64,8 +63,6 @@ export const CommunicationPreferencesSchema =
     pushNotifications: { type: Boolean, default: true },
   });
 
-
-
 const VendorSchema = new Schema<IVendor>(
   {
     email: {
@@ -87,7 +84,7 @@ const VendorSchema = new Schema<IVendor>(
     },
     role: {
       type: String,
-      enum:['vendor'],
+      enum: ['vendor'],
       default: 'vendor',
     },
     isDelete: {
@@ -130,8 +127,6 @@ VendorSchema.pre<Query<any, any>>('find', function (next) {
 //   }
 //   next();
 // });
-
-
 
 // Pre-hook for 'findOne'
 VendorSchema.pre<Query<any, any>>('findOne', function (next) {

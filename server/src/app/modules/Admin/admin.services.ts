@@ -1,8 +1,10 @@
-import { buildSearchCriteria, checkForSensitiveFieldUpdate, filterSensitiveFields } from '../../../helpers/validation';
+import {
+  buildSearchCriteria,
+  checkForSensitiveFieldUpdate,
+  filterSensitiveFields,
+} from '../../../helpers/validation';
 import { IAdmin } from './admin.interface';
 import { AdminModel } from './admin.model';
-
-
 
 const getAllAdminInToDB = async (
   filter: any,
@@ -85,7 +87,13 @@ const updateAdminInDB = async (
   adminIdFromJWT: string,
 ) => {
   try {
-    const sensitiveFields = ['role', 'isActive', 'isDelete', 'createdAt', 'updatedAt'];
+    const sensitiveFields = [
+      'role',
+      'isActive',
+      'isDelete',
+      'createdAt',
+      'updatedAt',
+    ];
 
     // Check for sensitive field updates if not super admin
     if (!isSuperAdmin) {
@@ -107,7 +115,9 @@ const updateAdminInDB = async (
       {
         new: true,
         runValidators: true,
-        select: isSuperAdmin ? '' : '-passwordHash -isDelete -createdAt -updatedAt',
+        select: isSuperAdmin
+          ? ''
+          : '-passwordHash -isDelete -createdAt -updatedAt',
       },
     );
 
@@ -124,7 +134,7 @@ const updateAdminInDB = async (
 
 const deleteAdminInDB = async (id: string, isSuperAdmin: boolean) => {
   try {
-    if (isSuperAdmin) {     
+    if (isSuperAdmin) {
       const deletedAdmin = await AdminModel.findByIdAndUpdate(
         id,
         { $set: { isDelete: true } }, // Mark as deleted (true)

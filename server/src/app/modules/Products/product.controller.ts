@@ -4,7 +4,6 @@ import { ProductServices } from './product.services';
 
 // Controller to fetch all active products
 const getProducts: RequestHandler = async (req, res, next) => {
-  
   try {
     const result = await ProductServices.getProducts(req.query);
     res.status(200).json({
@@ -19,9 +18,9 @@ const getProducts: RequestHandler = async (req, res, next) => {
 
 const getVendorAllProducts: RequestHandler = async (req, res, next) => {
   const vendorId = req.params.id;
-  const query = req.query
+  const query = req.query;
   try {
-    const result = await ProductServices.getVendorAllProducts(vendorId,query);
+    const result = await ProductServices.getVendorAllProducts(vendorId, query);
     res.status(200).json({
       success: true,
       message: "Vendor's All Products fetched successfully",
@@ -36,7 +35,7 @@ const getVendorAllProducts: RequestHandler = async (req, res, next) => {
 const getSingleProduct: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params; // Extract product ID from route params
-    const result = await ProductServices.getSingleProduct(id,req.query);
+    const result = await ProductServices.getSingleProduct(id, req.query);
     res.status(200).json({
       success: true,
       message: 'Product fetched successfully',
@@ -151,7 +150,6 @@ const deleteProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
-
 // Export all the controllers
 export const ProductController = {
   getProducts, // Get all active products
@@ -164,5 +162,4 @@ export const ProductController = {
   isActiveProduct, // Toggle product active status
   updateAProduct, // Update product fields
   deleteProduct, // Delete a product by ID
-  
 };

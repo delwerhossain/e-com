@@ -8,8 +8,8 @@ export interface IProduct {
   vendorId: Types.ObjectId;
   categoryName: string; //searchable field
   subcategoryName?: string; //searchable field
-  subCategoryId?: Types.ObjectId; 
-  categoryId?: Types.ObjectId; 
+  subCategoryId?: Types.ObjectId;
+  categoryId?: Types.ObjectId;
   images: string[] | string;
   isFeatured?: boolean;
   isActive?: boolean;
