@@ -3,12 +3,12 @@ import {
   filterSensitiveFields,
 } from '../../../helpers/validation';
 import { IUser } from './users.interface';
-import { UserModel } from './users.model';
+import { User } from './users.model';
 
 const createUserInToDB = async (data: any) => {
   try {
     // Create the user in the database
-    const result = await UserModel.create(data);
+    const result = await User.create(data);
     return result;
   } catch (error: any) {
     // Handle duplicate email error
@@ -31,7 +31,7 @@ const getAUserInToDB = async (id: string, email: string) => {
   // if user isDeleted is true then it will not be displayed
 
   // Find the user by either ID or email, excluding the password hash and other sensitive fields
-  const result = await UserModel.findOne(searchCriteria).select(
+  const result = await User.findOne(searchCriteria).select(
     '-passwordHash -isDelete -isActive -__v -createdAt -updatedAt',
   );
   return result;
@@ -54,7 +54,7 @@ const updateAUserInToDB = async (id: string, data: Partial<IUser>) => {
 
     // Find and update the user //! For updateOne we can user email if we use  findByOneAndUpdate
     // Perform the update
-    const updatedUser = await UserModel.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       id,
       { $set: updateData },
       {
@@ -100,12 +100,12 @@ const getAllUsersInToDB = async (
   ];
 
   // Execute the aggregation pipeline
-  const result = await UserModel.aggregate(aggregationPipeline, {
+  const result = await User.aggregate(aggregationPipeline, {
     allowDiskUse: true,
   });
 
   // Get the total count of documents matching the filter
-  const total = await UserModel.countDocuments(filter);
+  const total = await User.countDocuments(filter);
 
   // Return data and total count
   return { data: result, total };
@@ -115,7 +115,7 @@ const getAllUsersInToDB = async (
 const deleteAUserInToDB = async (id: string) => {
   try {
     // Use findByIdAndUpdate to directly search and update the user
-    const deletedUser = await UserModel.findByIdAndUpdate(
+    const deletedUser = await User.findByIdAndUpdate(
       id,
       { $set: { isDelete: true } }, // Mark as deleted (true)
       { new: true },

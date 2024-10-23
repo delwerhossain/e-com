@@ -1,1 +1,4 @@
-// interface for auth routes
+export interface ILoginUser {
+    email: string
+    password: string
+}
