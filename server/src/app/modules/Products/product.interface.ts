@@ -1,11 +1,13 @@
 import { Types } from 'mongoose';
 export interface IProduct {
-  name: string;
+  name: string; //searchable field
   description: string;
-  price: number;
-  color?: string;
+  price: number; //searchable field
+  color?: string; //searchable field
   quantity: number;
   vendorId: Types.ObjectId;
+  categoryName: string; //searchable field
+  subcategoryName?: string; //searchable field
   subCategoryId?: Types.ObjectId;
   categoryId?: Types.ObjectId;
   images: string[] | string;
@@ -26,6 +28,6 @@ export interface IProduct {
   deliveryCharge?: number;
   restockDate?: string; // Expected restock date for out-of-stock products
   weight?: string;
-  size?: string;
+  size?: string; //searchable field
   maxOrderQuantity?: number; // Maximum order quantity allowed
 }

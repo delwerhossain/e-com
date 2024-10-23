@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import reviewsValidation from './reviews.validation';
 import { ReviewServices } from './reviews.services';
-import {Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { error } from 'console';
 
 // Controller to create a new review
@@ -120,8 +120,8 @@ const isActiveReview: RequestHandler = async (req, res, next) => {
     const { id } = req.params; // Extract review ID from route params
     const { isActive } = req.body; // Extract the new active status from the request body
     // console.log(isActive)
-    if(!isActive){
-      throw new Error('Status Not found')
+    if (!isActive) {
+      throw new Error('Status Not found');
     }
     const result = await ReviewServices.isActiveReview(id, isActive);
     res.status(200).json({
@@ -176,5 +176,5 @@ export const ReviewController = {
   isActiveReview, // Toggle review active status
   updateReview, // Update review fields
   deleteReview, // Delete a review by ID
-  getALLInActiveReviews
+  getALLInActiveReviews,
 };

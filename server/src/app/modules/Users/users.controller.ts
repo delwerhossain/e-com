@@ -264,7 +264,7 @@ const updateAUser = catchAsync(async (req: Request, res: Response) => {
     if (!validatedPrimitiveData.success) {
       throw new Error('Invalid data provided. Please provide valid data.');
     }
-    console.log({updateOperations});
+    console.log({ updateOperations });
     // Update the user in the database
     const updatedUser = await UserService.updateAUserInToDB(
       userID,

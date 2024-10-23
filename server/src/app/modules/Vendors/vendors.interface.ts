@@ -22,8 +22,6 @@ export interface ICommunicationPreferences {
   pushNotifications: boolean;
 }
 
-
-
 // Vendor Profile Interface
 export interface IVendorProfile {
   businessName: string;
