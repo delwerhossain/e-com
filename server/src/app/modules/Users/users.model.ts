@@ -6,7 +6,9 @@ import {
   ILoginDetails,
   IUser,
   IUserProfile,
+  UserModel,
 } from './users.interface';
+import bcrypt from 'bcrypt';
 
 // Address Schema
 export const AddressSchema = new Schema<IAddress>({
@@ -65,6 +67,7 @@ const UserSchema = new Schema<IUser>(
     passwordHash: {
       type: String,
       required: [true, 'Password is required'],
+      select: false,
       trim: true,
     },
     role: {
@@ -173,6 +176,20 @@ UserSchema.set('toJSON', {
   },
 });
 
+// 
+UserSchema.statics.isUserExistsByCustomId = async function (email: string) {
+  return await this.findOne({ email }).select('+password');
+  
+}
+UserSchema.statics.isPasswordMatched = async function (
+  requestPassword: string,  
+  storedPassword: string
+) {
+  return await bcrypt.compare(requestPassword, storedPassword);
+  
+}
+
+
 //**** Date Time Zone *******
 // UserSchema.set('timestamps', {
 //   currentTime: () => {
@@ -188,4 +205,5 @@ UserSchema.set('toJSON', {
 //   next();
 // });
 
-export const UserModel = model<IUser>('User', UserSchema);
+export const User = model<IUser, UserModel>('User', UserSchema);
+

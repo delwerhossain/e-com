@@ -1,3 +1,5 @@
+import { Model, Schema } from "mongoose";
+
 // Address Interface
 export interface IAddress {
   street?: string;
@@ -43,3 +45,11 @@ export interface IUser {
   profile?: IUserProfile; // Conditional profile based on role
   communicationPreferences?: ICommunicationPreferences;
 }
+
+
+export interface UserModel extends Model<IUser> {
+  isUserExistsByCustomId(email: string): Promise<IUser>;
+  isPasswordMatched(requestPassword: string, storedPassword: string): Promise<IUser>;
+
+}
+
