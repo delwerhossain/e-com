@@ -7,6 +7,7 @@ import { reviewRoutes } from '../app/modules/Reviews/reviews.routes';
 import { ProductRoutes } from '../app/modules/Products/product.routes';
 import { adminRoutes } from '../app/modules/Admin/admin.routes';
 import { superAdminRoutes } from '../app/modules/Admin/SuperAdmin/superAdmin.routes';
+import { authRoutes } from '../app/modules/Auth/auth.routes';
 
 const router = Router();
 
@@ -42,6 +43,10 @@ const moduleRoutes = [
   {
     path: '/product',
     route: ProductRoutes,
+  },
+  {
+    path: '/auth',
+    route: authRoutes,
   },
 ];
 
